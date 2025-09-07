@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard Admin - Jawaban Ujian</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-serif">
+
+  <div class="max-w-6xl mx-auto p-5">
+    <h1 class="text-2xl font-bold mb-5 text-center">📊 Dashboard Admin - Jawaban Peserta</h1>
+
+    <div class="overflow-x-auto bg-white shadow-md rounded-lg">
+      <table class="w-full border-collapse">
+        <thead>
+          <tr class="bg-gray-200 text-left">
+            <th class="p-2 border">Nama</th>
+            <th class="p-2 border">Status</th>
+            <th class="p-2 border">Alamat</th>
+            <th class="p-2 border">Waktu</th>
+            <th class="p-2 border">Nilai</th>
+            <th class="p-2 border">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal Detail -->
+  <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-lg p-6 max-w-3xl w-full">
+      <div id="detailBox" class="max-h-[70vh] overflow-y-auto"></div>
+      <div class="mt-4 flex justify-between">
+        <button onclick="saveNilai()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Beri Nilai</button>
+        <button onclick="closeModal()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, getDocs, getDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyAYNFwQxkIXvW9Z-uGWl8N4zhe2MJoBjfY",
+      authDomain: "soal-grecia.firebaseapp.com",
+      projectId: "soal-grecia",
+      storageBucket: "soal-grecia.firebasestorage.app",
+      messagingSenderId: "301760637420",
+      appId: "1:301760637420:web:d6aebf003c50c6cd1bf8c9",
+      measurementId: "G-JCY3EZE06C",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    let currentDocId = null;
+
+    // 🔹 Load Data ke Tabel
+    async function loadJawaban() {
+      const tableBody = document.getElementById("tableBody");
+      tableBody.innerHTML = "<tr><td colspan='6' class='text-center p-3'>Loading...</td></tr>";
+
+      const querySnapshot = await getDocs(collection(db, "jawaban"));
+      tableBody.innerHTML = "";
+
+      querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+
+        const row = document.createElement("tr");
+        row.classList.add("border-b");
+
+        row.innerHTML = `
+          <td class="p-2 border">${data.nama}</td>
+          <td class="p-2 border">${data.status}</td>
+          <td class="p-2 border">${data.alamat}</td>
+          <td class="p-2 border">${data.waktu?.seconds ? new Date(data.waktu.seconds * 1000).toLocaleString() : "-"}</td>
+          <td class="p-2 border text-center">${data.nilai ?? "-"}</td>
+          <td class="p-2 border">
+            <button onclick="showDetail('${docSnap.id}')" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">Detail</button>
+          </td>
+        `;
+
+        tableBody.appendChild(row);
+      });
+    }
+
+    // 🔹 Tampilkan Detail Jawaban
+    async function showDetail(id) {
+      currentDocId = id;
+      const docRef = doc(db, "jawaban", id);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        const detailBox = document.getElementById("detailBox");
+
+        let pilganHTML = "";
+        for (let i = 1; i <= 10; i++) {
+          pilganHTML += `
+            <p class="my-2">
+              <b>Soal ${i}:</b> ${data.jawaban?.["soal" + i] || "-"} 
+              <label class="ml-3"><input type="radio" name="pg${i}" value="benar"> ✅ Benar</label>
+              <label class="ml-2"><input type="radio" name="pg${i}" value="salah"> ❌ Salah</label>
+            </p>
+            <hr>`;
+        }
+
+        let essayHTML = "";
+        for (let i = 1; i <= 10; i++) {
+          essayHTML += `
+            <p class="my-2">
+              <b>Essay ${i}:</b> ${data.essay?.["essay" + i] || "-"} 
+              <label class="ml-3"><input type="radio" name="es${i}" value="benar"> ✅ Benar</label>
+              <label class="ml-2"><input type="radio" name="es${i}" value="salah"> ❌ Salah</label>
+            </p>
+            <hr>`;
+        }
+
+        detailBox.innerHTML = `
+          <h3 class="text-xl font-bold mb-2">Detail Jawaban - ${data.nama}</h3>
+          <h4 class="font-semibold mt-3 mb-1">Pilihan Ganda:</h4>
+          ${pilganHTML}
+          <h4 class="font-semibold mt-3 mb-1">Essay:</h4>
+          ${essayHTML}
+        `;
+
+        document.getElementById("modal").classList.remove("hidden");
+      }
+    }
+
+    // 🔹 Hitung & Simpan Nilai
+    async function saveNilai() {
+      if (!currentDocId) return;
+
+      let totalNilai = 0;
+
+      // Hitung Pilgan
+      for (let i = 1; i <= 10; i++) {
+        const radios = document.getElementsByName("pg" + i);
+        radios.forEach(r => {
+          if (r.checked) {
+            if (r.value === "benar") totalNilai += 5;
+            else totalNilai -= 3;
+          }
+        });
+      }
+
+      // Hitung Essay
+      for (let i = 1; i <= 10; i++) {
+        const radios = document.getElementsByName("es" + i);
+        radios.forEach(r => {
+          if (r.checked) {
+            if (r.value === "benar") totalNilai += 10;
+            // salah = 0
+          }
+        });
+      }
+
+      // Simpan ke Firestore
+      await updateDoc(doc(db, "jawaban", currentDocId), {
+        nilai: totalNilai,
+        dinilai: true
+      });
+
+      alert("Nilai berhasil disimpan: " + totalNilai);
+      closeModal();
+      loadJawaban();
+    }
+
+    // 🔹 Tutup Modal
+    function closeModal() {
+      document.getElementById("modal").classList.add("hidden");
+    }
+
+    // Expose ke global
+    window.showDetail = showDetail;
+    window.closeModal = closeModal;
+    window.saveNilai = saveNilai;
+    window.onload = loadJawaban;
+  </script>
+
+</body>
+</html>
