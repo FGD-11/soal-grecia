@@ -27,8 +27,10 @@
     async function submitUjian(e) {
       e.preventDefault();
 
-      // Ambil nama peserta
+      // Ambil data peserta
       const nama = document.getElementById("nama").value;
+      const status = document.getElementById("status").value;
+      const alamat = document.getElementById("alamat").value;
 
       // Ambil jawaban soal
       const jawaban1 = document.querySelector('input[name="soal1"]:checked')?.value || "";
@@ -38,6 +40,8 @@
       try {
         await addDoc(collection(db, "jawaban"), {
           nama: nama,
+          status: status,
+          alamat: alamat,
           jawaban: {
             soal1: jawaban1,
             soal2: jawaban2,
@@ -62,6 +66,17 @@
     <label>Nama Peserta:</label><br>
     <input type="text" id="nama" required><br><br>
 
+    <label>Status:</label><br>
+    <select id="status" required>
+      <option value="">-- Pilih Status --</option>
+      <option value="Reseller">Reseller</option>
+      <option value="Distributor">Distributor</option>
+    </select><br><br>
+
+    <label>Alamat:</label><br>
+    <textarea id="alamat" rows="3" required></textarea><br><br>
+
+    <hr>
     <p>1. Ibukota Indonesia adalah?</p>
     <input type="radio" name="soal1" value="Jakarta"> Jakarta<br>
     <input type="radio" name="soal1" value="Bandung"> Bandung<br>
