@@ -98,27 +98,28 @@
         const data = docSnap.data();
         const detailBox = document.getElementById("detailBox");
 
-        let pilganHTML = "";
-        for (let i = 1; i <= 10; i++) {
-          pilganHTML += `
-            <p class="my-2">
-              <b>Soal ${i}:</b> ${data.jawaban?.["soal" + i] || "-"} 
-              <label class="ml-3"><input type="radio" name="pg${i}" value="benar"> ✅ Benar</label>
-              <label class="ml-2"><input type="radio" name="pg${i}" value="salah"> ❌ Salah</label>
-            </p>
-            <hr>`;
-        }
+let pilganHTML = "";
+for (let i = 1; i <= 10; i++) {
+  pilganHTML += `
+    <p class="my-2">
+      <b>Soal ${i}:</b> ${data.pilgan?.["soal" + i] || "-"} 
+      <label class="ml-3"><input type="radio" name="pg${i}" value="benar"> ✅ Benar</label>
+      <label class="ml-2"><input type="radio" name="pg${i}" value="salah"> ❌ Salah</label>
+    </p>
+    <hr>`;
+}
 
-        let essayHTML = "";
-        for (let i = 1; i <= 10; i++) {
-          essayHTML += `
-            <p class="my-2">
-              <b>Essay ${i}:</b> ${data.essay?.["essay" + i] || "-"} 
-              <label class="ml-3"><input type="radio" name="es${i}" value="benar"> ✅ Benar</label>
-              <label class="ml-2"><input type="radio" name="es${i}" value="salah"> ❌ Salah</label>
-            </p>
-            <hr>`;
-        }
+let essayHTML = "";
+for (let i = 1; i <= 10; i++) {
+  essayHTML += `
+    <p class="my-2">
+      <b>Essay ${i}:</b> ${data.essay?.["essay" + i] || "-"} 
+      <label class="ml-3"><input type="radio" name="es${i}" value="benar"> ✅ Benar</label>
+      <label class="ml-2"><input type="radio" name="es${i}" value="salah"> ❌ Salah</label>
+    </p>
+    <hr>`;
+}
+
 
         detailBox.innerHTML = `
           <h3 class="text-xl font-bold mb-2">Detail Jawaban - ${data.nama}</h3>
