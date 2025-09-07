@@ -2,7 +2,85 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ujian Pilihan Ganda</title>
+  <style>
+    body {
+      font-family: "Times New Roman", Times, serif;
+      margin: 0;
+      padding: 0;
+      background: #f9f9f9;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+      background: #fff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      min-height: 100vh;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    label, p {
+      font-size: 18px;
+      line-height: 1.6;
+    }
+    input[type="text"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      margin-bottom: 15px;
+      font-size: 16px;
+      font-family: "Times New Roman", Times, serif;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    textarea {
+      resize: vertical;
+    }
+    .soal {
+      margin-bottom: 25px;
+      padding: 15px;
+      border-bottom: 1px solid #ddd;
+    }
+    .soal p {
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+    .jawaban {
+      margin-left: 15px;
+    }
+    .jawaban input {
+      margin-right: 8px;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      font-size: 18px;
+      font-family: "Times New Roman", Times, serif;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    @media (max-width: 600px) {
+      label, p {
+        font-size: 16px;
+      }
+      button {
+        font-size: 16px;
+      }
+    }
+  </style>
+
   <script type="module">
     // Import Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -61,38 +139,51 @@
   </script>
 </head>
 <body>
-  <h2>Ujian Pilihan Ganda</h2>
-  <form id="formUjian" onsubmit="submitUjian(event)">
-    <label>Nama Peserta:</label><br>
-    <input type="text" id="nama" required><br><br>
+  <div class="container">
+    <h2>Ujian Pilihan Ganda</h2>
+    <form id="formUjian" onsubmit="submitUjian(event)">
+      <label>Nama Peserta:</label>
+      <input type="text" id="nama" required>
 
-    <label>Status:</label><br>
-    <select id="status" required>
-      <option value="">-- Pilih Status --</option>
-      <option value="Reseller">Reseller</option>
-      <option value="Distributor">Distributor</option>
-    </select><br><br>
+      <label>Status:</label>
+      <select id="status" required>
+        <option value="">-- Pilih Status --</option>
+        <option value="Reseller">Reseller</option>
+        <option value="Distributor">Distributor</option>
+      </select>
 
-    <label>Alamat:</label><br>
-    <textarea id="alamat" rows="3" required></textarea><br><br>
+      <label>Alamat:</label>
+      <textarea id="alamat" rows="3" required></textarea>
 
-    <hr>
-    <p>1. Ibukota Indonesia adalah?</p>
-    <input type="radio" name="soal1" value="Jakarta"> Jakarta<br>
-    <input type="radio" name="soal1" value="Bandung"> Bandung<br>
-    <input type="radio" name="soal1" value="Surabaya"> Surabaya<br><br>
+      <div class="soal">
+        <p>1. Ibukota Indonesia adalah?</p>
+        <div class="jawaban">
+          <label><input type="radio" name="soal1" value="Jakarta"> Jakarta</label><br>
+          <label><input type="radio" name="soal1" value="Bandung"> Bandung</label><br>
+          <label><input type="radio" name="soal1" value="Surabaya"> Surabaya</label>
+        </div>
+      </div>
 
-    <p>2. 2 + 2 = ?</p>
-    <input type="radio" name="soal2" value="3"> 3<br>
-    <input type="radio" name="soal2" value="4"> 4<br>
-    <input type="radio" name="soal2" value="5"> 5<br><br>
+      <div class="soal">
+        <p>2. 2 + 2 = ?</p>
+        <div class="jawaban">
+          <label><input type="radio" name="soal2" value="3"> 3</label><br>
+          <label><input type="radio" name="soal2" value="4"> 4</label><br>
+          <label><input type="radio" name="soal2" value="5"> 5</label>
+        </div>
+      </div>
 
-    <p>3. Hewan pemakan rumput disebut?</p>
-    <input type="radio" name="soal3" value="Herbivora"> Herbivora<br>
-    <input type="radio" name="soal3" value="Karnivora"> Karnivora<br>
-    <input type="radio" name="soal3" value="Omnivora"> Omnivora<br><br>
+      <div class="soal">
+        <p>3. Hewan pemakan rumput disebut?</p>
+        <div class="jawaban">
+          <label><input type="radio" name="soal3" value="Herbivora"> Herbivora</label><br>
+          <label><input type="radio" name="soal3" value="Karnivora"> Karnivora</label><br>
+          <label><input type="radio" name="soal3" value="Omnivora"> Omnivora</label>
+        </div>
+      </div>
 
-    <button type="submit">Kirim Jawaban</button>
-  </form>
+      <button type="submit">Kirim Jawaban</button>
+    </form>
+  </div>
 </body>
 </html>
