@@ -1,88 +1,22 @@
+<!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
+  <title>Lembar Ujian</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Ujian Pilihan Ganda</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body {
       font-family: "Times New Roman", Times, serif;
-      margin: 0;
-      padding: 0;
-      background: #f9f9f9;
     }
-    .container {
-      max-width: 800px;
-      margin: auto;
-      padding: 20px;
-      background: #fff;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      min-height: 100vh;
-    }
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    label, p {
-      font-size: 18px;
-      line-height: 1.6;
-    }
-    input[type="text"],
-    select,
-    textarea {
-      width: 100%;
-      padding: 10px;
-      margin-top: 6px;
-      margin-bottom: 15px;
-      font-size: 16px;
-      font-family: "Times New Roman", Times, serif;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      box-sizing: border-box;
-    }
-    textarea {
-      resize: vertical;
-    }
-    .soal {
-      margin-bottom: 25px;
-      padding: 15px 0;
-      border-bottom: 1px solid #ddd;
-    }
-    .soal p {
-      margin-bottom: 10px;
-      font-weight: bold;
-    }
-    .jawaban {
-      margin-left: 15px;
-    }
-    .jawaban input {
-      margin-right: 8px;
-      vertical-align: middle;
-    }
-    button {
-      width: 100%;
-      padding: 12px;
-      font-size: 18px;
-      font-family: "Times New Roman", Times, serif;
-      background: #4caf50;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-    button:hover {
-      background: #45a049;
-    }
-    @media (max-width: 600px) {
-      label, p {
-        font-size: 16px;
-      }
-      button {
-        font-size: 16px;
-      }
+    .page-break {
+      border-top: 4px double #333;
+      margin: 2rem 0;
+      padding-top: 2rem;
     }
   </style>
 
+  <!-- Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -94,7 +28,7 @@
       storageBucket: "soal-grecia.firebasestorage.app",
       messagingSenderId: "301760637420",
       appId: "1:301760637420:web:d6aebf003c50c6cd1bf8c9",
-      measurementId: "G-JCY3EZE06C"
+      measurementId: "G-JCY3EZE06C",
     };
 
     const app = initializeApp(firebaseConfig);
@@ -102,84 +36,129 @@
 
     async function submitUjian(e) {
       e.preventDefault();
-
-      const nama = document.getElementById("nama").value.trim();
+      const nama = document.getElementById("nama").value;
       const status = document.getElementById("status").value;
-      const alamat = document.getElementById("alamat").value.trim();
+      const alamat = document.getElementById("alamat").value;
 
-      const jawaban1 = document.querySelector('input[name="soal1"]:checked')?.value || "";
-      const jawaban2 = document.querySelector('input[name="soal2"]:checked')?.value || "";
-      const jawaban3 = document.querySelector('input[name="soal3"]:checked')?.value || "";
+      let jawabanPilgan = {};
+      for (let i = 1; i <= 10; i++) {
+        jawabanPilgan[`soal${i}`] =
+          document.querySelector(`input[name="soal${i}"]:checked`)?.value || "";
+      }
+
+      let jawabanEssay = {};
+      for (let i = 1; i <= 10; i++) {
+        jawabanEssay[`essay${i}`] =
+          document.getElementById(`essay${i}`).value || "";
+      }
 
       try {
         await addDoc(collection(db, "jawaban"), {
           nama,
           status,
           alamat,
-          jawaban: {
-            soal1: jawaban1,
-            soal2: jawaban2,
-            soal3: jawaban3
-          },
-          waktu: new Date()
+          pilgan: jawabanPilgan,
+          essay: jawabanEssay,
+          waktu: new Date(),
         });
         alert("Jawaban berhasil disimpan!");
         document.getElementById("formUjian").reset();
       } catch (err) {
-        console.error("Gagal simpan jawaban: ", err);
+        console.error("Error simpan:", err);
         alert("Terjadi error, coba lagi.");
       }
     }
-
     window.submitUjian = submitUjian;
   </script>
 </head>
-<body>
-  <div class="container">
-    <h2>Ujian Pilihan Ganda</h2>
-    <form id="formUjian" onsubmit="submitUjian(event)">
-      <label for="nama">Nama Peserta:</label>
-      <input type="text" id="nama" name="nama" required />
+<body class="bg-gray-50 p-4">
+  <form
+    id="formUjian"
+    onsubmit="submitUjian(event)"
+    class="max-w-3xl mx-auto bg-white p-5 sm:p-8 shadow-lg rounded-md"
+  >
+    <!-- Identitas -->
+    <h2 class="text-2xl sm:text-3xl font-bold text-center mb-6">Lembar Ujian Pilihan Ganda</h2>
 
-      <label for="status">Status:</label>
-      <select id="status" name="status" required>
-        <option value="">-- Pilih Status --</option>
-        <option value="Reseller">Reseller</option>
-        <option value="Distributor">Distributor</option>
-      </select>
+    <div class="page-break"></div>
 
-      <label for="alamat">Alamat:</label>
-      <textarea id="alamat" name="alamat" rows="3" required></textarea>
+    <label for="nama" class="block font-semibold mb-1">Nama Peserta:</label>
+    <input type="text" id="nama" required
+      class="w-full border border-gray-300 rounded-md p-2 mb-4 focus:ring-2 focus:ring-blue-500" />
 
-      <div class="soal">
-        <p>1. Ibukota Indonesia adalah?</p>
-        <div class="jawaban">
-          <label><input type="radio" name="soal1" value="Jakarta" required /> Jakarta</label><br />
-          <label><input type="radio" name="soal1" value="Bandung" /> Bandung</label><br />
-          <label><input type="radio" name="soal1" value="Surabaya" /> Surabaya</label>
-        </div>
+    <label for="status" class="block font-semibold mb-1">Status:</label>
+    <select id="status" required
+      class="w-full border border-gray-300 rounded-md p-2 mb-4 focus:ring-2 focus:ring-blue-500">
+      <option value="">-- Pilih Status --</option>
+      <option value="Reseller">Reseller</option>
+      <option value="Distributor">Distributor</option>
+    </select>
+
+    <label for="alamat" class="block font-semibold mb-1">Alamat:</label>
+    <textarea id="alamat" rows="3" required
+      class="w-full border border-gray-300 rounded-md p-2 mb-6 resize-none focus:ring-2 focus:ring-blue-500"></textarea>
+
+    <!-- Pemisah halaman -->
+    <div class="page-break"></div>
+
+    <h2 class="text-2xl sm:text-3xl font-bold text-center mb-6">Lembar Ujian Pilgan</h2>
+
+    <div class="page-break"></div>
+
+    <!-- Soal Pilihan Ganda -->
+    <div class="space-y-6">
+      <div>
+        <p class="mb-2 font-semibold">1. Ibukota Indonesia adalah?</p>
+        <label><input type="radio" name="soal1" value="Jakarta" required /> Jakarta</label><br />
+        <label><input type="radio" name="soal1" value="Bandung" /> Bandung</label><br />
+        <label><input type="radio" name="soal1" value="Surabaya" /> Surabaya</label>
       </div>
+      <hr />
 
-      <div class="soal">
-        <p>2. 2 + 2 = ?</p>
-        <div class="jawaban">
-          <label><input type="radio" name="soal2" value="3" required /> 3</label><br />
-          <label><input type="radio" name="soal2" value="4" /> 4</label><br />
-          <label><input type="radio" name="soal2" value="5" /> 5</label>
-        </div>
+      <div>
+        <p class="mb-2 font-semibold">2. 2 + 2 = ?</p>
+        <label><input type="radio" name="soal2" value="3" required /> 3</label><br />
+        <label><input type="radio" name="soal2" value="4" /> 4</label><br />
+        <label><input type="radio" name="soal2" value="5" /> 5</label>
       </div>
+      <hr />
 
-      <div class="soal">
-        <p>3. Hewan pemakan rumput disebut?</p>
-        <div class="jawaban">
-          <label><input type="radio" name="soal3" value="Herbivora" required /> Herbivora</label><br />
-          <label><input type="radio" name="soal3" value="Karnivora" /> Karnivora</label><br />
-          <label><input type="radio" name="soal3" value="Omnivora" /> Omnivora</label>
-        </div>
+      <!-- Tambahkan soal3–soal10 seperti pola di atas -->
+    </div>
+
+    <!-- Pemisah halaman -->
+    <div class="page-break"></div>
+
+    <h2 class="text-2xl sm:text-3xl font-bold text-center mb-6">Lembar Ujian Essay</h2>
+
+    <div class="page-break"></div>
+
+    <!-- Soal Essay -->
+    <div class="space-y-6">
+      <div>
+        <p class="mb-2 font-semibold">1. Jelaskan pengertian Pancasila!</p>
+        <textarea id="essay1" rows="4" required
+          class="w-full border border-gray-300 rounded-md p-2 resize-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Tulis jawaban Anda di sini..."></textarea>
       </div>
+      <hr />
 
-      <button type="submit">Kirim Jawaban</button>
-    </form>
-  </div>
+      <div>
+        <p class="mb-2 font-semibold">2. Apa manfaat menjaga kesehatan?</p>
+        <textarea id="essay2" rows="4" required
+          class="w-full border border-gray-300 rounded-md p-2 resize-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Tulis jawaban Anda di sini..."></textarea>
+      </div>
+      <hr />
+
+      <!-- Tambahkan essay3–essay10 seperti pola di atas -->
+    </div>
+
+    <!-- Submit -->
+    <button type="submit"
+      class="mt-8 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-md transition">
+      Kirim Semua Jawaban
+    </button>
+  </form>
 </body>
 </html>
