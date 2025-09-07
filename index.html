@@ -25,7 +25,7 @@
       apiKey: "AIzaSyAYNFwQxkIXvW9Z-uGWl8N4zhe2MJoBjfY",
       authDomain: "soal-grecia.firebaseapp.com",
       projectId: "soal-grecia",
-      storageBucket: "soal-grecia.appspot.com",
+      storageBucket: "soal-grecia.firebasestorage.app",
       messagingSenderId: "301760637420",
       appId: "1:301760637420:web:d6aebf003c50c6cd1bf8c9",
       measurementId: "G-JCY3EZE06C",
@@ -48,8 +48,8 @@
 
       let jawabanEssay = {};
       for (let i = 1; i <= 10; i++) {
-        jawabanEssay[`essay${i}`] =
-          document.getElementById(`essay${i}`).value || "";
+        const el = document.getElementById(`essay${i}`);
+        jawabanEssay[`essay${i}`] = el ? el.value : "";
       }
 
       try {
@@ -78,7 +78,9 @@
     class="max-w-3xl mx-auto bg-white p-5 sm:p-8 shadow-lg rounded-md"
   >
     <!-- Identitas -->
-    <h2 class="text-2xl sm:text-3xl font-bold text-center mb-6">KOMPETISI UJIAN DIGITAL GRECIA</h2>
+    <h2 class="text-2xl sm:text-3xl font-bold text-center mb-6">
+      KOMPETISI UJIAN DIGITAL GRECIA
+    </h2>
 
     <div class="page-break"></div>
 
@@ -98,60 +100,99 @@
     <textarea id="alamat" rows="3" required
       class="w-full border border-gray-300 rounded-md p-2 mb-6 resize-none focus:ring-2 focus:ring-blue-500"></textarea>
 
-    <!-- Pemisah halaman -->
+    <!-- Pilihan Ganda -->
     <div class="page-break"></div>
-
     <h2 class="text-2xl sm:text-3xl font-bold text-center mb-6">Lembar Ujian Pilgan</h2>
-
     <div class="page-break"></div>
 
-    <!-- Soal Pilihan Ganda -->
     <div class="space-y-6">
       <div>
         <p class="mb-2 font-semibold">1. Ibukota Indonesia adalah?</p>
         <label><input type="radio" name="soal1" value="Jakarta" required /> Jakarta</label><br />
         <label><input type="radio" name="soal1" value="Bandung" /> Bandung</label><br />
         <label><input type="radio" name="soal1" value="Surabaya" /> Surabaya</label>
-      </div>
-      <hr />
+      </div><hr />
 
       <div>
         <p class="mb-2 font-semibold">2. 2 + 2 = ?</p>
         <label><input type="radio" name="soal2" value="3" required /> 3</label><br />
         <label><input type="radio" name="soal2" value="4" /> 4</label><br />
         <label><input type="radio" name="soal2" value="5" /> 5</label>
-      </div>
-      <hr />
+      </div><hr />
 
-      <!-- Tambahkan soal3–soal10 seperti pola di atas -->
+      <div>
+        <p class="mb-2 font-semibold">3. Warna bendera Indonesia adalah?</p>
+        <label><input type="radio" name="soal3" value="Merah Putih" required /> Merah Putih</label><br />
+        <label><input type="radio" name="soal3" value="Biru Kuning" /> Biru Kuning</label><br />
+        <label><input type="radio" name="soal3" value="Hijau Putih" /> Hijau Putih</label>
+      </div><hr />
+
+      <div>
+        <p class="mb-2 font-semibold">4. Planet terdekat dengan Matahari?</p>
+        <label><input type="radio" name="soal4" value="Merkurius" required /> Merkurius</label><br />
+        <label><input type="radio" name="soal4" value="Venus" /> Venus</label><br />
+        <label><input type="radio" name="soal4" value="Bumi" /> Bumi</label>
+      </div><hr />
+
+      <div>
+        <p class="mb-2 font-semibold">5. Hewan yang bisa terbang adalah?</p>
+        <label><input type="radio" name="soal5" value="Burung" required /> Burung</label><br />
+        <label><input type="radio" name="soal5" value="Kucing" /> Kucing</label><br />
+        <label><input type="radio" name="soal5" value="Ikan" /> Ikan</label>
+      </div><hr />
+
+      <div>
+        <p class="mb-2 font-semibold">6. 10 × 10 = ?</p>
+        <label><input type="radio" name="soal6" value="50" required /> 50</label><br />
+        <label><input type="radio" name="soal6" value="100" /> 100</label><br />
+        <label><input type="radio" name="soal6" value="200" /> 200</label>
+      </div><hr />
+
+      <div>
+        <p class="mb-2 font-semibold">7. Gunung tertinggi di Indonesia?</p>
+        <label><input type="radio" name="soal7" value="Jayawijaya" required /> Jayawijaya</label><br />
+        <label><input type="radio" name="soal7" value="Merapi" /> Merapi</label><br />
+        <label><input type="radio" name="soal7" value="Bromo" /> Bromo</label>
+      </div><hr />
+
+      <div>
+        <p class="mb-2 font-semibold">8. Laut terluas di dunia?</p>
+        <label><input type="radio" name="soal8" value="Hindia" required /> Hindia</label><br />
+        <label><input type="radio" name="soal8" value="Pasifik" /> Pasifik</label><br />
+        <label><input type="radio" name="soal8" value="Atlantik" /> Atlantik</label>
+      </div><hr />
+
+      <div>
+        <p class="mb-2 font-semibold">9. Proklamasi Indonesia pada tahun?</p>
+        <label><input type="radio" name="soal9" value="1945" required /> 1945</label><br />
+        <label><input type="radio" name="soal9" value="1950" /> 1950</label><br />
+        <label><input type="radio" name="soal9" value="1965" /> 1965</label>
+      </div><hr />
+
+      <div>
+        <p class="mb-2 font-semibold">10. Hasil fotosintesis adalah?</p>
+        <label><input type="radio" name="soal10" value="Oksigen" required /> Oksigen</label><br />
+        <label><input type="radio" name="soal10" value="Karbon Dioksida" /> Karbon Dioksida</label><br />
+        <label><input type="radio" name="soal10" value="Air" /> Air</label>
+      </div>
     </div>
 
-    <!-- Pemisah halaman -->
+    <!-- Essay -->
     <div class="page-break"></div>
-
     <h2 class="text-2xl sm:text-3xl font-bold text-center mb-6">Lembar Ujian Essay</h2>
-
     <div class="page-break"></div>
 
-    <!-- Soal Essay -->
     <div class="space-y-6">
-      <div>
-        <p class="mb-2 font-semibold">1. Jelaskan pengertian Pancasila!</p>
-        <textarea id="essay1" rows="4" required
-          class="w-full border border-gray-300 rounded-md p-2 resize-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Tulis jawaban Anda di sini..."></textarea>
-      </div>
-      <hr />
-
-      <div>
-        <p class="mb-2 font-semibold">2. Apa manfaat menjaga kesehatan?</p>
-        <textarea id="essay2" rows="4" required
-          class="w-full border border-gray-300 rounded-md p-2 resize-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Tulis jawaban Anda di sini..."></textarea>
-      </div>
-      <hr />
-
-      <!-- Tambahkan essay3–essay10 seperti pola di atas -->
+      <div><p class="mb-2 font-semibold">1. Jelaskan pengertian Pancasila!</p><textarea id="essay1" rows="4" required class="w-full border p-2"></textarea></div><hr />
+      <div><p class="mb-2 font-semibold">2. Apa manfaat menjaga kesehatan?</p><textarea id="essay2" rows="4" required class="w-full border p-2"></textarea></div><hr />
+      <div><p class="mb-2 font-semibold">3. Apa peran teknologi di era modern?</p><textarea id="essay3" rows="4" required class="w-full border p-2"></textarea></div><hr />
+      <div><p class="mb-2 font-semibold">4. Jelaskan arti gotong royong!</p><textarea id="essay4" rows="4" required class="w-full border p-2"></textarea></div><hr />
+      <div><p class="mb-2 font-semibold">5. Apa pentingnya menjaga lingkungan?</p><textarea id="essay5" rows="4" required class="w-full border p-2"></textarea></div><hr />
+      <div><p class="mb-2 font-semibold">6. Bagaimana cara belajar efektif?</p><textarea id="essay6" rows="4" required class="w-full border p-2"></textarea></div><hr />
+      <div><p class="mb-2 font-semibold">7. Jelaskan fungsi UUD 1945!</p><textarea id="essay7" rows="4" required class="w-full border p-2"></textarea></div><hr />
+      <div><p class="mb-2 font-semibold">8. Bagaimana cara meningkatkan disiplin?</p><textarea id="essay8" rows="4" required class="w-full border p-2"></textarea></div><hr />
+      <div><p class="mb-2 font-semibold">9. Mengapa pendidikan penting bagi bangsa?</p><textarea id="essay9" rows="4" required class="w-full border p-2"></textarea></div><hr />
+      <div><p class="mb-2 font-semibold">10. Jelaskan peran ekonomi kreatif di Indonesia!</p><textarea id="essay10" rows="4" required class="w-full border p-2"></textarea></div>
     </div>
 
     <!-- Submit -->
