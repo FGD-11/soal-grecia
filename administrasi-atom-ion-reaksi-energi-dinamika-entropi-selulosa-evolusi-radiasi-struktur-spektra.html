@@ -95,7 +95,8 @@
       soal6: "Pegagan",
       soal7: "12Hukum",
       soal8: "Hati",
-      soal9: "Prop1"
+      soal9: "Prop1",
+      soal10: "ZaitunHabbatusauda"
     };
 
     let currentDocId = null;
@@ -146,18 +147,25 @@
         // Pilihan Ganda Otomatis
         const pilganTable = document.getElementById("pilganTable");
         pilganTable.innerHTML = "";
-        for (let i = 1; i <= 9; i++) {
+        for (let i = 1; i <= 10; i++) {
           const jawabanUser = data.pilgan?.["soal" + i] || "-";
           const jawabanKunci = kunciPilgan["soal" + i] || "-";
-          const benar = jawabanUser === jawabanKunci;
-          if (benar) nilaiPilganOtomatis += 5;
+          let penilaian = "";
+
+          if (jawabanUser === jawabanKunci) {
+            nilaiPilganOtomatis += 10;
+            penilaian = "✅ Benar (+10)";
+          } else {
+            nilaiPilganOtomatis -= 5;
+            penilaian = "❌ Salah (-5)";
+          }
 
           const tr = document.createElement("tr");
           tr.innerHTML = `
             <td class="p-2 border text-center">${i}</td>
             <td class="p-2 border">${jawabanUser}</td>
             <td class="p-2 border">${jawabanKunci}</td>
-            <td class="p-2 border text-center">${benar ? "✅ Benar" : "❌ Salah"}</td>
+            <td class="p-2 border text-center">${penilaian}</td>
           `;
           pilganTable.appendChild(tr);
         }
