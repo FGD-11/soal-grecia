@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dashboard Admin - Jawaban Ujian</title>
+  <title>Admin - Dashboard Ujian</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 font-serif">
@@ -71,7 +71,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, collection, getDocs, getDoc, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    // Firebase Config
+    // 🔹 Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyAYNFwQxkIXvW9Z-uGWl8N4zhe2MJoBjfY",
       authDomain: "soal-grecia.firebaseapp.com",
@@ -87,15 +87,15 @@
 
     // 🔹 Kunci Jawaban Pilihan Ganda
     const kunciPilgan = {
-      soal1: "a",
-      soal2: "c",
-      soal3: "b",
-      soal4: "a",
-      soal5: "a",
-      soal6: "c",
-      soal7: "a",
-      soal8: "a",
-      soal9: "a"
+      soal1: "Kunyit",
+      soal2: "Gula Darah",
+      soal3: "Regenerasi",
+      soal4: "Sambiloto",
+      soal5: "Zaitunqu",
+      soal6: "Pegagan",
+      soal7: "12Hukum",
+      soal8: "Hati",
+      soal9: "Prop1"
     };
 
     let currentDocId = null;
@@ -149,7 +149,7 @@
         for (let i = 1; i <= 9; i++) {
           const jawabanUser = data.pilgan?.["soal" + i] || "-";
           const jawabanKunci = kunciPilgan["soal" + i] || "-";
-          const benar = jawabanUser.toLowerCase() === jawabanKunci.toLowerCase();
+          const benar = jawabanUser === jawabanKunci;
           if (benar) nilaiPilganOtomatis += 5;
 
           const tr = document.createElement("tr");
@@ -165,7 +165,7 @@
         // Essay Manual
         const essayTable = document.getElementById("essayTable");
         essayTable.innerHTML = "";
-        for (let i = 1; i <= 10; i++) {
+        for (let i = 1; i <= Object.keys(data.essay || {}).length; i++) {
           const tr = document.createElement("tr");
           tr.innerHTML = `
             <td class="p-2 border text-center">${i}</td>
@@ -189,7 +189,12 @@
       let totalNilai = nilaiPilganOtomatis;
 
       // Hitung Essay (manual)
-      for (let i = 1; i <= 10; i++) {
+      const docRef = doc(db, "jawaban", currentDocId);
+      const docSnap = await getDoc(docRef);
+      const data = docSnap.data();
+      const jumlahEssay = Object.keys(data.essay || {}).length;
+
+      for (let i = 1; i <= jumlahEssay; i++) {
         const radios = document.getElementsByName("es" + i);
         radios.forEach(r => {
           if (r.checked && r.value === "benar") {
