@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Hasil Ujian</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: "Times New Roman", Times, serif; }
+  </style>
+
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAYNFwQxkIXvW9Z-uGWl8N4zhe2MJoBjfY",
+      authDomain: "soal-grecia.firebaseapp.com",
+      projectId: "soal-grecia",
+      storageBucket: "soal-grecia.firebasestorage.app",
+      messagingSenderId: "301760637420",
+      appId: "1:301760637420:web:d6aebf003c50c6cd1bf8c9",
+      measurementId: "G-JCY3EZE06C",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Kunci jawaban pilgan
+    const kunciPilgan = {
+      soal1: "Kunyit",
+      soal2: "Gula Darah",
+      soal3: "Regenerasi",
+      soal4: "Sambiloto",
+      soal5: "Zaitunqu",
+      soal6: "Pegagan",
+      soal7: "12Hukum",
+      soal8: "Hati",
+      soal9: "Prop1"
+    };
+
+    function hitungNilai(pilgan) {
+      let skor = 0;
+      for (let k in kunciPilgan) {
+        if (pilgan[k] === kunciPilgan[k]) {
+          skor += 10; // contoh: 1 soal benar = 10 poin
+        }
+      }
+      return skor;
+    }
+
+    async function loadHasil() {
+      const tableBody = document.getElementById("hasilBody");
+      tableBody.innerHTML = "";
+      const querySnapshot = await getDocs(collection(db, "jawaban"));
+
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const nilai = hitungNilai(data.pilgan || {});
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="border px-4 py-2">${data.nama}</td>
+          <td class="border px-4 py-2">${data.status}</td>
+          <td class="border px-4 py-2">${data.alamat}</td>
+          <td class="border px-4 py-2 font-bold">${nilai}</td>
+        `;
+        tableBody.appendChild(tr);
+      });
+    }
+
+    window.onload = loadHasil;
+  </script>
+</head>
+<body class="bg-gray-50 p-6">
+  <div class="max-w-5xl mx-auto bg-white p-6 rounded-lg shadow-lg">
+    <h1 class="text-2xl sm:text-3xl font-bold mb-6 text-center">Hasil Ujian Peserta</h1>
+    
+    <div class="overflow-x-auto">
+      <table class="min-w-full border-collapse border border-gray-300">
+        <thead>
+          <tr class="bg-gray-100">
+            <th class="border px-4 py-2">Nama Peserta</th>
+            <th class="border px-4 py-2">Status Peserta</th>
+            <th class="border px-4 py-2">Alamat Peserta</th>
+            <th class="border px-4 py-2">Nilai Peserta</th>
+          </tr>
+        </thead>
+        <tbody id="hasilBody"></tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>
