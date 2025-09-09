@@ -9,7 +9,7 @@
 <body class="bg-gray-100 font-serif">
 
   <div class="max-w-6xl mx-auto p-5">
-    <h1 class="text-2xl font-bold mb-5 text-center"> Dashboard Admin - Data Peserta</h1>
+    <h1 class="text-2xl font-bold mb-5 text-center">Dashboard Admin - Data Peserta</h1>
 
     <div class="overflow-x-auto bg-white shadow-md rounded-lg">
       <table class="w-full border-collapse">
@@ -30,8 +30,35 @@
 
   <!-- Modal Detail -->
   <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
-    <div class="bg-white rounded-lg shadow-lg p-6 max-w-3xl w-full">
-      <div id="detailBox" class="max-h-[70vh] overflow-y-auto"></div>
+    <div class="bg-white rounded-lg shadow-lg p-6 max-w-5xl w-full">
+      <h3 id="modalTitle" class="text-xl font-bold mb-4 text-center"></h3>
+
+      <div class="overflow-y-auto max-h-[70vh]">
+        <h4 class="font-semibold mb-2">Pilihan Ganda:</h4>
+        <table class="w-full border mb-4">
+          <thead>
+            <tr class="bg-gray-100">
+              <th class="p-2 border">No</th>
+              <th class="p-2 border">Jawaban</th>
+              <th class="p-2 border">Penilaian</th>
+            </tr>
+          </thead>
+          <tbody id="pilganTable"></tbody>
+        </table>
+
+        <h4 class="font-semibold mb-2">Essay:</h4>
+        <table class="w-full border">
+          <thead>
+            <tr class="bg-gray-100">
+              <th class="p-2 border">No</th>
+              <th class="p-2 border">Jawaban</th>
+              <th class="p-2 border">Penilaian</th>
+            </tr>
+          </thead>
+          <tbody id="essayTable"></tbody>
+        </table>
+      </div>
+
       <div class="mt-4 flex justify-between">
         <button onclick="saveNilai()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Beri Nilai</button>
         <button onclick="closeModal()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Tutup</button>
@@ -41,7 +68,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, getDocs, getDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, getDoc, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     // Firebase Config
     const firebaseConfig = {
@@ -79,8 +106,9 @@
           <td class="p-2 border">${data.alamat}</td>
           <td class="p-2 border">${data.waktu?.seconds ? new Date(data.waktu.seconds * 1000).toLocaleString() : "-"}</td>
           <td class="p-2 border text-center">${data.nilai ?? "-"}</td>
-          <td class="p-2 border">
+          <td class="p-2 border space-x-2">
             <button onclick="showDetail('${docSnap.id}')" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">Detail</button>
+            <button onclick="deletePeserta('${docSnap.id}')" class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">Delete</button>
           </td>
         `;
 
@@ -96,38 +124,38 @@
 
       if (docSnap.exists()) {
         const data = docSnap.data();
-        const detailBox = document.getElementById("detailBox");
 
-let pilganHTML = "";
-for (let i = 1; i <= 10; i++) {
-  pilganHTML += `
-    <p class="my-2">
-      <b>Soal ${i}:</b> ${data.pilgan?.["soal" + i] || "-"} 
-      <label class="ml-3"><input type="radio" name="pg${i}" value="benar"> ✅ Benar</label>
-      <label class="ml-2"><input type="radio" name="pg${i}" value="salah"> ❌ Salah</label>
-    </p>
-    <hr>`;
-}
+        document.getElementById("modalTitle").innerText = "Detail Jawaban - " + data.nama;
 
-let essayHTML = "";
-for (let i = 1; i <= 10; i++) {
-  essayHTML += `
-    <p class="my-2">
-      <b>Essay ${i}:</b> ${data.essay?.["essay" + i] || "-"} 
-      <label class="ml-3"><input type="radio" name="es${i}" value="benar"> ✅ Benar</label>
-      <label class="ml-2"><input type="radio" name="es${i}" value="salah"> ❌ Salah</label>
-    </p>
-    <hr>`;
-}
+        const pilganTable = document.getElementById("pilganTable");
+        pilganTable.innerHTML = "";
+        for (let i = 1; i <= 10; i++) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td class="p-2 border text-center">${i}</td>
+            <td class="p-2 border">${data.pilgan?.["soal" + i] || "-"}</td>
+            <td class="p-2 border">
+              <label><input type="radio" name="pg${i}" value="benar"> ✅ Benar</label>
+              <label class="ml-2"><input type="radio" name="pg${i}" value="salah"> ❌ Salah</label>
+            </td>
+          `;
+          pilganTable.appendChild(tr);
+        }
 
-
-        detailBox.innerHTML = `
-          <h3 class="text-xl font-bold mb-2">Detail Jawaban - ${data.nama}</h3>
-          <h4 class="font-semibold mt-3 mb-1">Pilihan Ganda:</h4>
-          ${pilganHTML}
-          <h4 class="font-semibold mt-3 mb-1">Essay:</h4>
-          ${essayHTML}
-        `;
+        const essayTable = document.getElementById("essayTable");
+        essayTable.innerHTML = "";
+        for (let i = 1; i <= 10; i++) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td class="p-2 border text-center">${i}</td>
+            <td class="p-2 border">${data.essay?.["essay" + i] || "-"}</td>
+            <td class="p-2 border">
+              <label><input type="radio" name="es${i}" value="benar"> ✅ Benar</label>
+              <label class="ml-2"><input type="radio" name="es${i}" value="salah"> ❌ Salah</label>
+            </td>
+          `;
+          essayTable.appendChild(tr);
+        }
 
         document.getElementById("modal").classList.remove("hidden");
       }
@@ -156,12 +184,10 @@ for (let i = 1; i <= 10; i++) {
         radios.forEach(r => {
           if (r.checked) {
             if (r.value === "benar") totalNilai += 10;
-            // salah = 0
           }
         });
       }
 
-      // Simpan ke Firestore
       await updateDoc(doc(db, "jawaban", currentDocId), {
         nilai: totalNilai,
         dinilai: true
@@ -170,6 +196,15 @@ for (let i = 1; i <= 10; i++) {
       alert("Nilai berhasil disimpan: " + totalNilai);
       closeModal();
       loadJawaban();
+    }
+
+    // 🔹 Hapus Peserta
+    async function deletePeserta(id) {
+      if (confirm("Apakah Anda yakin ingin menghapus peserta ini?")) {
+        await deleteDoc(doc(db, "jawaban", id));
+        alert("Peserta berhasil dihapus.");
+        loadJawaban();
+      }
     }
 
     // 🔹 Tutup Modal
@@ -181,6 +216,7 @@ for (let i = 1; i <= 10; i++) {
     window.showDetail = showDetail;
     window.closeModal = closeModal;
     window.saveNilai = saveNilai;
+    window.deletePeserta = deletePeserta;
     window.onload = loadJawaban;
   </script>
 
