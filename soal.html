@@ -2,164 +2,190 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ujian Herbal Grecia</title>
+  <title>Lembar Ujian</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f9f9f9;
-      padding: 20px;
-      line-height: 1.6;
-    }
-    .container {
-      max-width: 800px;
-      margin: auto;
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    .soal {
-      margin-bottom: 20px;
-    }
-    .soal p {
-      font-weight: bold;
-    }
-    textarea {
-      width: 100%;
-      min-height: 100px;
-      padding: 10px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-    button {
-      display: block;
-      margin: 20px auto;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 8px;
-      background: #279c79;
-      color: #fff;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #1f7a61;
-    }
+    body { font-family: "Times New Roman", Times, serif; }
+    .page-break { border-top: 4px double #333; margin: 2rem 0; padding-top: 2rem; }
   </style>
-</head>
-<body>
-  <div class="container">
-    <h2>Ujian Herbal Grecia</h2>
-    <form id="formUjian" onsubmit="submitUjian(event)">
-      
-      <!-- Soal Pilihan Ganda -->
-      <div class="soal">
-        <p>1. Salah satu keunggulan GIFTMAG adalah dapat membantu berbagai gangguan kulit …</p>
-        <label><input type="radio" name="q1" value="a"> a. Kandungan kunyit yang bersifat anti inflamasi</label><br>
-        <label><input type="radio" name="q1" value="b"> b. Daun mint yang menenangkan kulit</label><br>
-        <label><input type="radio" name="q1" value="c"> c. Temulawak yang menghangatkan tubuh</label><br>
-        <label><input type="radio" name="q1" value="d"> d. Ketumbar yang bersifat analgesik</label>
-      </div>
 
-      <div class="soal">
-        <p>2. Kombinasi sambiloto dan daun bidara dalam madu hitam pahit terutama bermanfaat untuk …</p>
-        <label><input type="radio" name="q2" value="a"> a. Menjaga kesehatan kulit agar tidak keriput</label><br>
-        <label><input type="radio" name="q2" value="b"> b. Mengatasi insomnia secara langsung</label><br>
-        <label><input type="radio" name="q2" value="c"> c. Menurunkan kadar gula darah, menenangkan, dan memperkuat daya tahan tubuh</label><br>
-        <label><input type="radio" name="q2" value="d"> d. Menambah aroma segar pada madu</label>
-      </div>
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-      <div class="soal">
-        <p>3. Fungsi utama Gamat Emas dalam madu hitam pahit ini adalah …</p>
-        <label><input type="radio" name="q3" value="a"> a. Memberi rasa manis alami</label><br>
-        <label><input type="radio" name="q3" value="b"> b. Meregenerasi sel & mempercepat penyembuhan luka</label><br>
-        <label><input type="radio" name="q3" value="c"> c. Memberi aroma herbal segar</label><br>
-        <label><input type="radio" name="q3" value="d"> d. Mengurangi rasa pahit sambiloto</label>
-      </div>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAYNFwQxkIXvW9Z-uGWl8N4zhe2MJoBjfY",
+      authDomain: "soal-grecia.firebaseapp.com",
+      projectId: "soal-grecia",
+      storageBucket: "soal-grecia.firebasestorage.app",
+      messagingSenderId: "301760637420",
+      appId: "1:301760637420:web:d6aebf003c50c6cd1bf8c9",
+      measurementId: "G-JCY3EZE06C",
+    };
 
-      <div class="soal">
-        <p>4. Salah satu bahan utama dalam formulasi Madu Hitam Pahit Grecia plus Gamat Gold adalah …</p>
-        <label><input type="radio" name="q4" value="a"> a. Sambiloto</label><br>
-        <label><input type="radio" name="q4" value="b"> b. Kopi</label><br>
-        <label><input type="radio" name="q4" value="c"> c. Jahe merah</label><br>
-        <label><input type="radio" name="q4" value="d"> d. Kayu manis</label>
-      </div>
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-      <div class="soal">
-        <p>5. Berikut produk gecia yang termasuk dalam Nano Wave Technology kecuali …</p>
-        <label><input type="radio" name="q5" value="a"> a. Zaitunqu Super dan madu savir</label><br>
-        <label><input type="radio" name="q5" value="b"> b. Gamat dan greensauda</label><br>
-        <label><input type="radio" name="q5" value="c"> c. Gamat dan gif uragin</label><br>
-        <label><input type="radio" name="q5" value="d"> d. Green sauda dan gamat</label>
-      </div>
+    async function submitUjian(e) {
+      e.preventDefault();
+      const nama = document.getElementById("nama").value;
+      const status = document.getElementById("status").value;
+      const alamat = document.getElementById("alamat").value;
 
-      <div class="soal">
-        <p>6. Di bawah ini, mana yang termasuk komposisi Gif Vit Kapsul?</p>
-        <label><input type="radio" name="q6" value="a"> a. Habbatusauda, Zaitun, Propolis, Daun Kelor</label><br>
-        <label><input type="radio" name="q6" value="b"> b. Habbatusauda, Propolis, Spirulina & Propolis</label><br>
-        <label><input type="radio" name="q6" value="c"> c. Habbatusauda, Bawang Dayak, Zaitun & Propolis</label><br>
-        <label><input type="radio" name="q6" value="d"> d. Habbatusauda, Zaitun, Bawang Dayak & Pegagan</label>
-      </div>
-
-      <div class="soal">
-        <p>7. Apa nama pelatihan kelas GreciaEdu yang rutin diadakan dan dishare di setiap hari Minggu?</p>
-        <label><input type="radio" name="q7" value="a"> a. Rahasia 12 Hukum Alam Semesta</label><br>
-        <label><input type="radio" name="q7" value="b"> b. Rahasia Hukum Semesta</label><br>
-        <label><input type="radio" name="q7" value="c"> c. Rahasia Semesta dan Sudut Pandang Islam</label><br>
-        <label><input type="radio" name="q7" value="d"> d. Rahasia 12 Semesta Alam</label>
-      </div>
-
-      <div class="soal">
-        <p>8. Organ utama yang bertanggung jawab dalam produksi kolesterol adalah …</p>
-        <label><input type="radio" name="q8" value="a"> a. Hati</label><br>
-        <label><input type="radio" name="q8" value="b"> b. Jantung</label><br>
-        <label><input type="radio" name="q8" value="c"> c. Ginjal</label><br>
-        <label><input type="radio" name="q8" value="d"> d. Insulin</label>
-      </div>
-
-      <div class="soal">
-        <p>9. Dari pernyataan berikut manakah yang benar?</p>
-        <ol>
-          <li>1. Gif Vit</li>
-          <li>2. Green food</li>
-          <li>3. Savir</li>
-          <li>4. Giftmag</li>
-          <li>5. Madu bajakah</li>
-        </ol>
-        <p>Dari pernyataan berikut manakan yang benar ?</p>
-        <label><input type="radio" name="q9" value="a"> a. No (1) dan (2) keduanya adalah herbal yang mengandung komposisi propolis</label><br>
-        <label><input type="radio" name="q9" value="b"> b. No (1) dan (2) keduanya adalah herbal yang tidak mengandung komposisi propolis</label><br>
-        <label><input type="radio" name="q9" value="c"> c. No (1) (2) dan (3) adalah herba yang semuanya mengandung komposisi habbatussauda</label><br>
-        <label><input type="radio" name="q9" value="d"> d. Semua herba di atas tidak memiliki tambahan teknologi nano</label>
-      </div>
-
-      <!-- Soal Esai -->
-      <div class="soal">
-        <p>10. Apa resep herbal alami untuk wasir yang dipraktikkan oleh Pak Hardi saat kelas GreciaEdu?</p>
-        <textarea name="q10" placeholder="Tulis jawaban Anda di sini..."></textarea>
-      </div>
-
-      <button type="submit">Kirim Jawaban</button>
-    </form>
-  </div>
-
-  <script>
-    function submitUjian(event) {
-      event.preventDefault();
-      const formData = new FormData(event.target);
-      let hasil = {};
-      formData.forEach((value, key) => {
-        hasil[key] = value;
+      let jawabanPilgan = {};
+      document.querySelectorAll("input[type='radio']:checked").forEach((el) => {
+        jawabanPilgan[el.name] = el.value;
       });
-      console.log("Jawaban Peserta:", hasil);
-      alert("Jawaban berhasil disimpan! (cek console)");
-      // TODO: bisa ditambahkan firestore save di sini
+
+      let jawabanEssay = {};
+      document.querySelectorAll("textarea[id^='essay']").forEach((el, idx) => {
+        jawabanEssay[`essay${idx + 1}`] = el.value;
+      });
+
+      try {
+        await addDoc(collection(db, "jawaban"), {
+          nama,
+          status,
+          alamat,
+          pilgan: jawabanPilgan,
+          essay: jawabanEssay,
+          waktu: new Date(),
+        });
+        alert("Jawaban berhasil disimpan!");
+        document.getElementById("formUjian").reset();
+      } catch (err) {
+        console.error("Error simpan:", err);
+        alert("Terjadi error, coba lagi.");
+      }
     }
+    window.submitUjian = submitUjian;
   </script>
+</head>
+<body class="bg-gray-50 p-4">
+  <form id="formUjian" onsubmit="submitUjian(event)" class="max-w-3xl mx-auto bg-white p-5 sm:p-8 shadow-lg rounded-md">
+    
+    <h2 class="text-2xl sm:text-3xl font-bold text-center mb-6">
+      KOMPETISI UJIAN DIGITAL GRECIA
+    </h2>
+
+    <!-- Identitas -->
+    <label for="nama" class="block font-semibold mb-1">Nama Peserta:</label>
+    <input type="text" id="nama" required class="w-full border border-gray-300 rounded-md p-2 mb-4" />
+
+    <label for="status" class="block font-semibold mb-1">Status:</label>
+    <select id="status" required class="w-full border border-gray-300 rounded-md p-2 mb-4">
+      <option value="">-- Pilih Status --</option>
+      <option value="Reseller">Reseller</option>
+      <option value="Distributor">Distributor</option>
+    </select>
+
+    <label for="alamat" class="block font-semibold mb-1">Alamat:</label>
+    <textarea id="alamat" rows="3" required class="w-full border border-gray-300 rounded-md p-2 mb-6 resize-none"></textarea>
+
+    <!-- Pilihan Ganda -->
+    <div class="page-break"></div>
+    <h2 class="text-2xl sm:text-3xl font-bold text-center mb-6">Lembar Ujian Pilgan</h2>
+    <div class="page-break"></div>
+
+    <div class="space-y-6">
+      <div>
+        <p class="mb-2 font-semibold">1. Salah satu keunggulan GIFTMAG adalah dapat membantu berbagai gangguan kulit …</p>
+        <label><input type="radio" name="soal1" value="Kunyit" required /> Kandungan kunyit yang bersifat anti inflamasi dan anti bakteri</label><br />
+        <label><input type="radio" name="soal1" value="Daun Mint" /> Daun mint yang menenangkan kulit</label><br />
+        <label><input type="radio" name="soal1" value="Temulawak" /> Temulawak yang menghangatkan tubuh</label><br />
+        <label><input type="radio" name="soal1" value="Ketumbar" /> Ketumbar yang bersifat analgesik</label>
+      </div><hr />
+
+      <div>
+        <p class="mb-2 font-semibold">2. Kombinasi sambiloto dan daun bidara dalam madu hitam pahit terutama bermanfaat untuk …</p>
+        <label><input type="radio" name="soal2" value="Kulit" required /> Menjaga kesehatan kulit</label><br />
+        <label><input type="radio" name="soal2" value="Insomnia" /> Mengatasi insomnia</label><br />
+        <label><input type="radio" name="soal2" value="Gula Darah" /> Menurunkan gula darah & memperkuat daya tahan</label><br />
+        <label><input type="radio" name="soal2" value="Aroma" /> Menambah aroma segar</label>
+      </div><hr />
+
+      <div>
+        <p class="mb-2 font-semibold">3. Fungsi utama Gamat Emas dalam madu hitam pahit ini adalah …</p>
+        <label><input type="radio" name="soal3" value="Manis" required /> Memberi rasa manis</label><br />
+        <label><input type="radio" name="soal3" value="Regenerasi" /> Meregenerasi sel & mempercepat penyembuhan luka</label><br />
+        <label><input type="radio" name="soal3" value="Aroma" /> Memberi aroma herbal</label><br />
+        <label><input type="radio" name="soal3" value="Pahit" /> Mengurangi rasa pahit</label>
+      </div><hr />
+
+      <div>
+        <p class="mb-2 font-semibold">4. Salah satu bahan utama dalam formulasi Madu Hitam Pahit Grecia plus Gamat Gold adalah …</p>
+        <label><input type="radio" name="soal4" value="Sambiloto" required /> Sambiloto</label><br />
+        <label><input type="radio" name="soal4" value="Kopi" /> Kopi</label><br />
+        <label><input type="radio" name="soal4" value="Jahe Merah" /> Jahe merah</label><br />
+        <label><input type="radio" name="soal4" value="Kayu Manis" /> Kayu manis</label>
+      </div><hr />
+
+      <div>
+        <p class="mb-2 font-semibold">5. Berikut produk gecia yang termasuk dalam Nano Wave Technology kecuali …</p>
+        <label><input type="radio" name="soal5" value="Zaitunqu" required /> Zaitunqu Super & madu savir</label><br />
+        <label><input type="radio" name="soal5" value="Greensauda" /> Gamat & greensauda</label><br />
+        <label><input type="radio" name="soal5" value="GifUragin" /> Gamat & gif uragin</label><br />
+        <label><input type="radio" name="soal5" value="GreensaudaGamat" /> Green sauda & gamat</label>
+      </div><hr />
+
+      <div>
+        <p class="mb-2 font-semibold">6. Di bawah ini, mana yang termasuk komposisi Gif Vit Kapsul?</label><br />
+        <label><input type="radio" name="soal6" value="Spirulina" /> Habbatusauda, Propolis, Spirulina & Propolis</label><br />
+        <label><input type="radio" name="soal6" value="BawangDayak" /> Habbatusauda, Bawang Dayak, Zaitun & Propolis</label><br />
+        <label><input type="radio" name="soal6" value="Pegagan" /> Habbatusauda, Zaitun, Bawang Dayak & Pegagan</label>
+      </div><hr />
+
+      <div>
+        <p class="mb-2 font-semibold">7. Apa nama pelatihan kelas GreciaEdu yang rutin diadakan dan dishare di setiap hari Minggu?</p>
+        <label><input type="radio" name="soal7" value="12Hukum" required /> Rahasia 12 Hukum Alam Semesta</label><br />
+        <label><input type="radio" name="soal7" value="HukumSemesta" /> Rahasia Hukum Semesta</label><br />
+        <label><input type="radio" name="soal7" value="SemestaIslam" /> Rahasia Semesta dan Sudut Pandang Islam</label><br />
+        <label><input type="radio" name="soal7" value="12Semesta" /> Rahasia 12 Semesta Alam</label>
+      </div><hr />
+
+      <div>
+        <p class="mb-2 font-semibold">8. Organ utama yang bertanggung jawab dalam produksi kolesterol adalah …</p>
+        <label><input type="radio" name="soal8" value="Hati" required /> Hati</label><br />
+        <label><input type="radio" name="soal8" value="Jantung" /> Jantung</label><br />
+        <label><input type="radio" name="soal8" value="Ginjal" /> Ginjal</label><br />
+        <label><input type="radio" name="soal8" value="Insulin" /> Insulin</label>
+      </div><hr />
+
+      <div>
+        <p class="mb-2 font-semibold">9. perhatikan soal ini</p>
+        <ol>
+          <li>Gif Vit</li>
+          <li>Green food</li>
+          <li>Savir</li>
+          <li>Giftmag</li>
+          <li>Madu bajakah</li>
+        </ol>
+        <p class="mb-2 font-semibold">Dari pernyataan berikut manakah yang benar?</p>
+        <label><input type="radio" name="soal9" value="Prop1" required /> Gif Vit & Green food mengandung propolis</label><br />
+        <label><input type="radio" name="soal9" value="NoProp" /> Gif Vit & Green food tidak mengandung propolis</label><br />
+        <label><input type="radio" name="soal9" value="Habbatusauda" /> Gif Vit, Green food, Savir semuanya mengandung habbatussauda</label><br />
+        <label><input type="radio" name="soal9" value="NoNano" /> Semua tidak punya nano technology</label>
+      </div>
+    </div>
+
+    <!-- Essay -->
+    <div class="page-break"></div>
+    <h2 class="text-2xl sm:text-3xl font-bold text-center mb-6">Lembar Ujian Essay</h2>
+    <div class="page-break"></div>
+
+    <div class="space-y-6">
+      <div>
+        <p class="mb-2 font-semibold">1. Apa resep herbal alami untuk wasir yang dipraktikkan oleh Pak Hardi saat kelas GreciaEdu?</p>
+        <textarea id="essay1" rows="4" required class="w-full border p-2"></textarea>
+      </div>
+    </div>
+
+    <!-- Submit -->
+    <button type="submit" class="mt-8 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-md transition">
+      Kirim Semua Jawaban
+    </button>
+  </form>
 </body>
 </html>
