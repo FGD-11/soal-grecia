@@ -34,19 +34,20 @@
       <h3 id="modalTitle" class="text-xl font-bold mb-4 text-center"></h3>
 
       <div class="overflow-y-auto max-h-[70vh]">
-        <h4 class="font-semibold mb-2">Pilihan Ganda:</h4>
+        <h4 class="font-semibold mb-2">Pilihan Ganda (otomatis):</h4>
         <table class="w-full border mb-4">
           <thead>
             <tr class="bg-gray-100">
               <th class="p-2 border">No</th>
               <th class="p-2 border">Jawaban</th>
+              <th class="p-2 border">Kunci</th>
               <th class="p-2 border">Penilaian</th>
             </tr>
           </thead>
           <tbody id="pilganTable"></tbody>
         </table>
 
-        <h4 class="font-semibold mb-2">Essay:</h4>
+        <h4 class="font-semibold mb-2">Essay (manual):</h4>
         <table class="w-full border">
           <thead>
             <tr class="bg-gray-100">
@@ -66,153 +67,168 @@
     </div>
   </div>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore, collection, getDocs, getDoc, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, getDocs, getDoc, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  // Firebase Config
-  const firebaseConfig = {
-    apiKey: "AIzaSyAYNFwQxkIXvW9Z-uGWl8N4zhe2MJoBjfY",
-    authDomain: "soal-grecia.firebaseapp.com",
-    projectId: "soal-grecia",
-    storageBucket: "soal-grecia.firebasestorage.app",
-    messagingSenderId: "301760637420",
-    appId: "1:301760637420:web:d6aebf003c50c6cd1bf8c9",
-    measurementId: "G-JCY3EZE06C",
-  };
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyAYNFwQxkIXvW9Z-uGWl8N4zhe2MJoBjfY",
+      authDomain: "soal-grecia.firebaseapp.com",
+      projectId: "soal-grecia",
+      storageBucket: "soal-grecia.firebasestorage.app",
+      messagingSenderId: "301760637420",
+      appId: "1:301760637420:web:d6aebf003c50c6cd1bf8c9",
+      measurementId: "G-JCY3EZE06C",
+    };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-  let currentDocId = null;
+    // 🔹 Kunci Jawaban Pilihan Ganda
+    const kunciPilgan = {
+      soal1: "a",
+      soal2: "c",
+      soal3: "b",
+      soal4: "a",
+      soal5: "a",
+      soal6: "c",
+      soal7: "a",
+      soal8: "a",
+      soal9: "a"
+    };
 
-  // 🔹 Load Data ke Tabel
-  async function loadJawaban() {
-    const tableBody = document.getElementById("tableBody");
-    tableBody.innerHTML = "<tr><td colspan='6' class='text-center p-3'>Loading...</td></tr>";
+    let currentDocId = null;
+    let nilaiPilganOtomatis = 0;
 
-    const querySnapshot = await getDocs(collection(db, "jawaban"));
-    tableBody.innerHTML = "";
+    // 🔹 Load Data ke Tabel
+    async function loadJawaban() {
+      const tableBody = document.getElementById("tableBody");
+      tableBody.innerHTML = "<tr><td colspan='6' class='text-center p-3'>Loading...</td></tr>";
 
-    querySnapshot.forEach((docSnap) => {
-      const data = docSnap.data();
+      const querySnapshot = await getDocs(collection(db, "jawaban"));
+      tableBody.innerHTML = "";
 
-      const row = document.createElement("tr");
-      row.classList.add("border-b");
+      querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
 
-      row.innerHTML = `
-        <td class="p-2 border">${data.nama}</td>
-        <td class="p-2 border">${data.status}</td>
-        <td class="p-2 border">${data.alamat}</td>
-        <td class="p-2 border">${data.waktu?.seconds ? new Date(data.waktu.seconds * 1000).toLocaleString() : "-"}</td>
-        <td class="p-2 border text-center">${data.nilai ?? "-"}</td>
-        <td class="p-2 border space-x-2">
-          <button onclick="showDetail('${docSnap.id}')" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">Detail</button>
-          <button onclick="deletePeserta('${docSnap.id}')" class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">Delete</button>
-        </td>
-      `;
+        const row = document.createElement("tr");
+        row.classList.add("border-b");
 
-      tableBody.appendChild(row);
-    });
-  }
-
-  // 🔹 Tampilkan Detail Jawaban
-  async function showDetail(id) {
-    currentDocId = id;
-    const docRef = doc(db, "jawaban", id);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      document.getElementById("modalTitle").innerText = "Detail Jawaban - " + data.nama;
-
-      // Pilihan Ganda
-      const pilganTable = document.getElementById("pilganTable");
-      pilganTable.innerHTML = "";
-      const jumlahPilgan = Object.keys(data.pilgan || {}).length;
-      for (let i = 1; i <= jumlahPilgan; i++) {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td class="p-2 border text-center">${i}</td>
-          <td class="p-2 border">${data.pilgan?.["soal" + i] || "-"}</td>
-          <td class="p-2 border">
-            <label><input type="radio" name="pg${i}" value="benar"> ✅ Benar</label>
-            <label class="ml-2"><input type="radio" name="pg${i}" value="salah"> ❌ Salah</label>
+        row.innerHTML = `
+          <td class="p-2 border">${data.nama}</td>
+          <td class="p-2 border">${data.status}</td>
+          <td class="p-2 border">${data.alamat}</td>
+          <td class="p-2 border">${data.waktu?.seconds ? new Date(data.waktu.seconds * 1000).toLocaleString() : "-"}</td>
+          <td class="p-2 border text-center">${data.nilai ?? "-"}</td>
+          <td class="p-2 border space-x-2">
+            <button onclick="showDetail('${docSnap.id}')" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">Detail</button>
+            <button onclick="deletePeserta('${docSnap.id}')" class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">Delete</button>
           </td>
         `;
-        pilganTable.appendChild(tr);
-      }
 
-      // Essay
-      const essayTable = document.getElementById("essayTable");
-      essayTable.innerHTML = "";
-      const jumlahEssay = Object.keys(data.essay || {}).length;
-      for (let i = 1; i <= jumlahEssay; i++) {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td class="p-2 border text-center">${i}</td>
-          <td class="p-2 border">${data.essay?.["essay" + i] || "-"}</td>
-          <td class="p-2 border">
-            <label><input type="radio" name="es${i}" value="benar"> ✅ Benar</label>
-            <label class="ml-2"><input type="radio" name="es${i}" value="salah"> ❌ Salah</label>
-          </td>
-        `;
-        essayTable.appendChild(tr);
-      }
-
-      document.getElementById("modal").classList.remove("hidden");
+        tableBody.appendChild(row);
+      });
     }
-  }
 
-  // 🔹 Hitung & Simpan Nilai
-  async function saveNilai() {
-    if (!currentDocId) return;
-    let totalNilai = 0;
+    // 🔹 Tampilkan Detail Jawaban
+    async function showDetail(id) {
+      currentDocId = id;
+      const docRef = doc(db, "jawaban", id);
+      const docSnap = await getDoc(docRef);
 
-    // Pilgan
-    document.querySelectorAll("[name^='pg']").forEach((r) => {
-      if (r.checked) {
-        if (r.value === "benar") totalNilai += 5;
-        else totalNilai -= 3;
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        nilaiPilganOtomatis = 0;
+
+        document.getElementById("modalTitle").innerText = "Detail Jawaban - " + data.nama;
+
+        // Pilihan Ganda Otomatis
+        const pilganTable = document.getElementById("pilganTable");
+        pilganTable.innerHTML = "";
+        for (let i = 1; i <= 9; i++) {
+          const jawabanUser = data.pilgan?.["soal" + i] || "-";
+          const jawabanKunci = kunciPilgan["soal" + i] || "-";
+          const benar = jawabanUser.toLowerCase() === jawabanKunci.toLowerCase();
+          if (benar) nilaiPilganOtomatis += 5;
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td class="p-2 border text-center">${i}</td>
+            <td class="p-2 border">${jawabanUser}</td>
+            <td class="p-2 border">${jawabanKunci}</td>
+            <td class="p-2 border text-center">${benar ? "✅ Benar" : "❌ Salah"}</td>
+          `;
+          pilganTable.appendChild(tr);
+        }
+
+        // Essay Manual
+        const essayTable = document.getElementById("essayTable");
+        essayTable.innerHTML = "";
+        for (let i = 1; i <= 10; i++) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td class="p-2 border text-center">${i}</td>
+            <td class="p-2 border">${data.essay?.["essay" + i] || "-"}</td>
+            <td class="p-2 border">
+              <label><input type="radio" name="es${i}" value="benar"> ✅ Benar (+10)</label>
+              <label class="ml-2"><input type="radio" name="es${i}" value="salah"> ❌ Salah (0)</label>
+            </td>
+          `;
+          essayTable.appendChild(tr);
+        }
+
+        document.getElementById("modal").classList.remove("hidden");
       }
-    });
+    }
 
-    // Essay
-    document.querySelectorAll("[name^='es']").forEach((r) => {
-      if (r.checked && r.value === "benar") totalNilai += 10;
-    });
+    // 🔹 Hitung & Simpan Nilai
+    async function saveNilai() {
+      if (!currentDocId) return;
 
-    await updateDoc(doc(db, "jawaban", currentDocId), {
-      nilai: totalNilai,
-      dinilai: true
-    });
+      let totalNilai = nilaiPilganOtomatis;
 
-    alert("Nilai berhasil disimpan: " + totalNilai);
-    closeModal();
-    loadJawaban();
-  }
+      // Hitung Essay (manual)
+      for (let i = 1; i <= 10; i++) {
+        const radios = document.getElementsByName("es" + i);
+        radios.forEach(r => {
+          if (r.checked && r.value === "benar") {
+            totalNilai += 10;
+          }
+        });
+      }
 
-  // 🔹 Hapus Peserta
-  async function deletePeserta(id) {
-    if (confirm("Apakah Anda yakin ingin menghapus peserta ini?")) {
-      await deleteDoc(doc(db, "jawaban", id));
-      alert("Peserta berhasil dihapus.");
+      await updateDoc(doc(db, "jawaban", currentDocId), {
+        nilai: totalNilai,
+        dinilai: true
+      });
+
+      alert("Nilai berhasil disimpan: " + totalNilai);
+      closeModal();
       loadJawaban();
     }
-  }
 
-  // 🔹 Tutup Modal
-  function closeModal() {
-    document.getElementById("modal").classList.add("hidden");
-  }
+    // 🔹 Hapus Peserta
+    async function deletePeserta(id) {
+      if (confirm("Apakah Anda yakin ingin menghapus peserta ini?")) {
+        await deleteDoc(doc(db, "jawaban", id));
+        alert("Peserta berhasil dihapus.");
+        loadJawaban();
+      }
+    }
 
-  // Expose
-  window.showDetail = showDetail;
-  window.closeModal = closeModal;
-  window.saveNilai = saveNilai;
-  window.deletePeserta = deletePeserta;
-  window.onload = loadJawaban;
-</script>
+    // 🔹 Tutup Modal
+    function closeModal() {
+      document.getElementById("modal").classList.add("hidden");
+    }
+
+    // Expose ke global
+    window.showDetail = showDetail;
+    window.closeModal = closeModal;
+    window.saveNilai = saveNilai;
+    window.deletePeserta = deletePeserta;
+    window.onload = loadJawaban;
+  </script>
 
 </body>
 </html>
