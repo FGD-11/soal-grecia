@@ -1,19 +1,18 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <title>Lembar Ujian</title>
+  <meta charset="UTF-8">
+  <title>Hasil Ujian Peserta</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body { font-family: "Times New Roman", Times, serif; }
-    .page-break { border-top: 4px double #333; margin: 2rem 0; padding-top: 2rem; }
   </style>
 
   <!-- Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAYNFwQxkIXvW9Z-uGWl8N4zhe2MJoBjfY",
@@ -28,161 +27,59 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    async function submitUjian(e) {
-      e.preventDefault();
-      const nama = document.getElementById("nama").value;
-      const status = document.getElementById("status").value;
-      const alamat = document.getElementById("alamat").value;
+    // 🔑 Kunci jawaban pilgan
+    const kunciPilgan = {
+      soal1: "Kunyit",
+      soal2: "Gula Darah",
+      soal3: "Regenerasi",
+      soal4: "Sambiloto",
+      soal5: "Zaitunqu",
+      soal6: "Pegagan",
+      soal7: "12Hukum",
+      soal8: "Hati",
+      soal9: "Prop1",
+      soal10: "ZaitunHabbatusauda"
+    };
 
-      let jawabanPilgan = {};
-      document.querySelectorAll("input[type='radio']:checked").forEach((el) => {
-        jawabanPilgan[el.name] = el.value;
-      });
-
-      let jawabanEssay = {};
-      document.querySelectorAll("textarea[id^='essay']").forEach((el, idx) => {
-        jawabanEssay[`essay${idx + 1}`] = el.value;
-      });
-
-      try {
-        await addDoc(collection(db, "jawaban"), {
-          nama,
-          status,
-          alamat,
-          pilgan: jawabanPilgan,
-          essay: jawabanEssay,
-          waktu: new Date(),
-        });
-        alert("Jawaban berhasil disimpan!");
-        document.getElementById("formUjian").reset();
-      } catch (err) {
-        console.error("Error simpan:", err);
-        alert("Terjadi error, coba lagi.");
+    function hitungNilai(pilgan) {
+      let skor = 0;
+      let total = Object.keys(kunciPilgan).length;
+      for (let no in kunciPilgan) {
+        if (pilgan && pilgan[no] === kunciPilgan[no]) {
+          skor++;
+        }
       }
+      return (skor / total) * 100; // nilai persen
     }
-    window.submitUjian = submitUjian;
+
+    async function loadHasil() {
+      const container = document.getElementById("hasilPeserta");
+      container.innerHTML = "";
+
+      const querySnapshot = await getDocs(collection(db, "jawaban"));
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const nilai = hitungNilai(data.pilgan);
+
+        const div = document.createElement("div");
+        div.className = "border p-4 mb-4 rounded bg-gray-50 shadow";
+        div.innerHTML = `
+          <p><strong>Nama Peserta:</strong> ${data.nama || "-"}</p>
+          <p><strong>Status Peserta:</strong> ${data.status || "-"}</p>
+          <p><strong>Alamat Peserta:</strong> ${data.alamat || "-"}</p>
+          <p><strong>Nilai Peserta:</strong> <span class="font-bold">${nilai}</span></p>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    window.onload = loadHasil;
   </script>
 </head>
-<body class="bg-gray-50 p-4">
-  <form id="formUjian" onsubmit="submitUjian(event)" class="max-w-3xl mx-auto bg-white p-5 sm:p-8 shadow-lg rounded-md">
-    
-    <h2 class="text-2xl sm:text-3xl font-bold text-center mb-6">
-      KOMPETISI UJIAN DIGITAL GRECIA
-    </h2>
-
-    <!-- Identitas -->
-    <label for="nama" class="block font-semibold mb-1">Nama Peserta:</label>
-    <input type="text" id="nama" required class="w-full border border-gray-300 rounded-md p-2 mb-4" />
-
-    <label for="status" class="block font-semibold mb-1">Status:</label>
-    <select id="status" required class="w-full border border-gray-300 rounded-md p-2 mb-4">
-      <option value="">-- Pilih Status --</option>
-      <option value="Reseller">Reseller</option>
-      <option value="Distributor">Distributor</option>
-    </select>
-
-    <label for="alamat" class="block font-semibold mb-1">Alamat:</label>
-    <textarea id="alamat" rows="3" required class="w-full border border-gray-300 rounded-md p-2 mb-6 resize-none"></textarea>
-
-    <!-- Pilihan Ganda -->
-    <div class="page-break"></div>
-    <h2 class="text-2xl sm:text-3xl font-bold text-center mb-6">Lembar Ujian Pilgan</h2>
-    <div class="page-break"></div>
-
-    <div class="space-y-6">
-      <div>
-        <p class="mb-2 font-semibold">1. Salah satu keunggulan GIFTMAG adalah dapat membantu berbagai gangguan kulit …</p>
-        <label><input type="radio" name="soal1" value="Kunyit" required /> Kandungan kunyit yang bersifat anti inflamasi dan anti bakteri</label><br />
-        <label><input type="radio" name="soal1" value="Daun Mint" /> Daun mint yang menenangkan kulit</label><br />
-        <label><input type="radio" name="soal1" value="Temulawak" /> Temulawak yang menghangatkan tubuh</label><br />
-        <label><input type="radio" name="soal1" value="Ketumbar" /> Ketumbar yang bersifat analgesik</label>
-      </div><hr />
-
-      <div>
-        <p class="mb-2 font-semibold">2. Kombinasi sambiloto dan daun bidara dalam madu hitam pahit terutama bermanfaat untuk …</p>
-        <label><input type="radio" name="soal2" value="Kulit" required /> Menjaga kesehatan kulit</label><br />
-        <label><input type="radio" name="soal2" value="Insomnia" /> Mengatasi insomnia</label><br />
-        <label><input type="radio" name="soal2" value="Gula Darah" /> Menurunkan gula darah & memperkuat daya tahan</label><br />
-        <label><input type="radio" name="soal2" value="Aroma" /> Menambah aroma segar</label>
-      </div><hr />
-
-      <div>
-        <p class="mb-2 font-semibold">3. Fungsi utama Gamat Emas dalam madu hitam pahit ini adalah …</p>
-        <label><input type="radio" name="soal3" value="Manis" required /> Memberi rasa manis</label><br />
-        <label><input type="radio" name="soal3" value="Regenerasi" /> Meregenerasi sel & mempercepat penyembuhan luka</label><br />
-        <label><input type="radio" name="soal3" value="Aroma" /> Memberi aroma herbal</label><br />
-        <label><input type="radio" name="soal3" value="Pahit" /> Mengurangi rasa pahit</label>
-      </div><hr />
-
-      <div>
-        <p class="mb-2 font-semibold">4. Salah satu bahan utama dalam formulasi Madu Hitam Pahit Grecia plus Gamat Gold adalah …</p>
-        <label><input type="radio" name="soal4" value="Sambiloto" required /> Sambiloto</label><br />
-        <label><input type="radio" name="soal4" value="Kopi" /> Kopi</label><br />
-        <label><input type="radio" name="soal4" value="Jahe Merah" /> Jahe merah</label><br />
-        <label><input type="radio" name="soal4" value="Kayu Manis" /> Kayu manis</label>
-      </div><hr />
-
-      <div>
-        <p class="mb-2 font-semibold">5. Berikut produk gecia yang termasuk dalam Nano Wave Technology kecuali …</p>
-        <label><input type="radio" name="soal5" value="Zaitunqu" required /> Zaitunqu Super & madu savir</label><br />
-        <label><input type="radio" name="soal5" value="Greensauda" /> Gamat & greensauda</label><br />
-        <label><input type="radio" name="soal5" value="GifUragin" /> Gamat & gif uragin</label><br />
-        <label><input type="radio" name="soal5" value="GreensaudaGamat" /> Green sauda & gamat</label>
-      </div><hr />
-
-      <div>
-        <p class="mb-2 font-semibold">6. Di bawah ini, mana yang termasuk komposisi Gif Vit Kapsul?</p>
-        <label><input type="radio" name="soal6" value="zaitun" /> Habbatusauda, Zaitun, Propolis, Daun Kelor</label><br />
-        <label><input type="radio" name="soal6" value="Spirulina" /> Habbatusauda, Propolis, Spirulina & Propolis</label><br />
-        <label><input type="radio" name="soal6" value="Pegagan" /> Habbatusauda, Zaitun, Bawang Dayak & Pegagan</label>
-        <label><input type="radio" name="soal6" value="BawangDayak" /> Habbatusauda, Bawang Dayak, Zaitun & Propolis</label><br />
-      </div><hr />
-
-      <div>
-        <p class="mb-2 font-semibold">7. Apa nama pelatihan kelas GreciaEdu yang rutin diadakan dan dishare di setiap hari Minggu?</p>
-        <label><input type="radio" name="soal7" value="12Hukum" required /> Rahasia 12 Hukum Alam Semesta</label><br />
-        <label><input type="radio" name="soal7" value="HukumSemesta" /> Rahasia Hukum Semesta</label><br />
-        <label><input type="radio" name="soal7" value="SemestaIslam" /> Rahasia Semesta dan Sudut Pandang Islam</label><br />
-        <label><input type="radio" name="soal7" value="12Semesta" /> Rahasia 12 Semesta Alam</label>
-      </div><hr />
-
-      <div>
-        <p class="mb-2 font-semibold">8. Organ utama yang bertanggung jawab dalam produksi kolesterol adalah …</p>
-        <label><input type="radio" name="soal8" value="Hati" required /> Hati</label><br />
-        <label><input type="radio" name="soal8" value="Jantung" /> Jantung</label><br />
-        <label><input type="radio" name="soal8" value="Ginjal" /> Ginjal</label><br />
-        <label><input type="radio" name="soal8" value="Insulin" /> Insulin</label>
-      </div><hr />
-
-      <div>
-        <p class="mb-2 font-semibold">9. perhatikan soal ini</p>
-        <ol>
-          <li>1. Gif Vit</li>
-          <li>2. Green food</li>
-          <li>3. Savir</li>
-          <li>4. Giftmag</li>
-          <li>5. Madu bajakah</li>
-        </ol>
-        <p class="mb-2 font-semibold">Dari pernyataan berikut manakah yang benar?</p>
-        <label><input type="radio" name="soal9" value="Prop1" required /> Gif Vit & Green food mengandung propolis</label><br />
-        <label><input type="radio" name="soal9" value="NoProp" /> Gif Vit & Green food tidak mengandung propolis</label><br />
-        <label><input type="radio" name="soal9" value="Habbatusauda" /> Gif Vit, Green food, Savir semuanya mengandung habbatussauda</label><br />
-        <label><input type="radio" name="soal9" value="NoNano" /> Semua tidak punya nano technology</label>
-      </div>
-
-      <div>
-        <p class="mb-2 font-semibold">10. Yang manakah herbal alami untuk wasir yang didemokan/dipraktikkan oleh Pak Hardi saat kelas GreciaEdu?</p>
-        <label><input type="radio" name="soal10" value="GamatPropolis" required /> Gamat dan propolis</label><br />
-        <label><input type="radio" name="soal10" value="ZaitunHabbatusauda" /> Zaitun dan habbatussauda</label><br />
-        <label><input type="radio" name="soal10" value="CukaApelGamat" /> Cuka apel dan gamat</label><br />
-        <label><input type="radio" name="soal10" value="GamatZaitun" /> Gamat dan zaitun</label>
-      </div>
-    </div>
-
-    <!-- Submit -->
-    <button type="submit" class="mt-8 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-md transition">
-      Kirim Semua Jawaban
-    </button>
-  </form>
+<body class="bg-gray-100 p-6">
+  <div class="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-lg">
+    <h1 class="text-2xl sm:text-3xl font-bold mb-6 text-center">Hasil Ujian Peserta</h1>
+    <div id="hasilPeserta"></div>
+  </div>
 </body>
 </html>
