@@ -73,7 +73,7 @@
     if (!session.token || Date.now() > session.expiredAt) {
     alert("Sesi login Anda telah berakhir. Silakan login ulang.");
     localStorage.removeItem("adminSession");
-    window.location.href = "admin-login.html";
+    window.location.href = "opening.html";
     }
     
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
