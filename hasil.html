@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Hasil Ujian</title>
+  <title>Hasil Ujian Peserta</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -27,7 +27,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Kunci jawaban pilgan
+    // 🔑 Kunci jawaban pilgan
     const kunciPilgan = {
       soal1: "Kunyit",
       soal2: "Gula Darah",
@@ -37,59 +37,49 @@
       soal6: "Pegagan",
       soal7: "12Hukum",
       soal8: "Hati",
-      soal9: "Prop1"
+      soal9: "Prop1",
+      soal10: "ZaitunHabbatusauda"
     };
 
     function hitungNilai(pilgan) {
       let skor = 0;
-      for (let k in kunciPilgan) {
-        if (pilgan[k] === kunciPilgan[k]) {
-          skor += 10; // contoh: 1 soal benar = 10 poin
+      let total = Object.keys(kunciPilgan).length;
+      for (let no in kunciPilgan) {
+        if (pilgan && pilgan[no] === kunciPilgan[no]) {
+          skor++;
         }
       }
-      return skor;
+      return (skor / total) * 100; // nilai persen
     }
 
     async function loadHasil() {
-      const tableBody = document.getElementById("hasilBody");
-      tableBody.innerHTML = "";
-      const querySnapshot = await getDocs(collection(db, "jawaban"));
+      const container = document.getElementById("hasilPeserta");
+      container.innerHTML = "";
 
+      const querySnapshot = await getDocs(collection(db, "jawaban"));
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        const nilai = hitungNilai(data.pilgan || {});
+        const nilai = hitungNilai(data.pilgan);
 
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td class="border px-4 py-2">${data.nama}</td>
-          <td class="border px-4 py-2">${data.status}</td>
-          <td class="border px-4 py-2">${data.alamat}</td>
-          <td class="border px-4 py-2 font-bold">${nilai}</td>
+        const div = document.createElement("div");
+        div.className = "border p-4 mb-4 rounded bg-gray-50 shadow";
+        div.innerHTML = `
+          <p><strong>Nama Peserta:</strong> ${data.nama || "-"}</p>
+          <p><strong>Status Peserta:</strong> ${data.status || "-"}</p>
+          <p><strong>Alamat Peserta:</strong> ${data.alamat || "-"}</p>
+          <p><strong>Nilai Peserta:</strong> <span class="font-bold">${nilai}</span></p>
         `;
-        tableBody.appendChild(tr);
+        container.appendChild(div);
       });
     }
 
     window.onload = loadHasil;
   </script>
 </head>
-<body class="bg-gray-50 p-6">
-  <div class="max-w-5xl mx-auto bg-white p-6 rounded-lg shadow-lg">
+<body class="bg-gray-100 p-6">
+  <div class="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-lg">
     <h1 class="text-2xl sm:text-3xl font-bold mb-6 text-center">Hasil Ujian Peserta</h1>
-    
-    <div class="overflow-x-auto">
-      <table class="min-w-full border-collapse border border-gray-300">
-        <thead>
-          <tr class="bg-gray-100">
-            <th class="border px-4 py-2">Nama Peserta</th>
-            <th class="border px-4 py-2">Status Peserta</th>
-            <th class="border px-4 py-2">Alamat Peserta</th>
-            <th class="border px-4 py-2">Nilai Peserta</th>
-          </tr>
-        </thead>
-        <tbody id="hasilBody"></tbody>
-      </table>
-    </div>
+    <div id="hasilPeserta"></div>
   </div>
 </body>
 </html>
