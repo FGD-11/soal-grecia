@@ -11,57 +11,77 @@
   </style>
 
   <!-- Firebase -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAYNFwQxkIXvW9Z-uGWl8N4zhe2MJoBjfY",
-      authDomain: "soal-grecia.firebaseapp.com",
-      projectId: "soal-grecia",
-      storageBucket: "soal-grecia.firebasestorage.app",
-      messagingSenderId: "301760637420",
-      appId: "1:301760637420:web:d6aebf003c50c6cd1bf8c9",
-      measurementId: "G-JCY3EZE06C",
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyAYNFwQxkIXvW9Z-uGWl8N4zhe2MJoBjfY",
+    authDomain: "soal-grecia.firebaseapp.com",
+    projectId: "soal-grecia",
+    storageBucket: "soal-grecia.firebasestorage.app",
+    messagingSenderId: "301760637420",
+    appId: "1:301760637420:web:d6aebf003c50c6cd1bf8c9",
+    measurementId: "G-JCY3EZE06C",
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-    async function submitUjian(e) {
-      e.preventDefault();
-      const nama = document.getElementById("nama").value;
-      const status = document.getElementById("status").value;
-      const alamat = document.getElementById("alamat").value;
+  const WAIT_TIME = 6 * 60 * 60 * 1000; // 6 jam dalam ms
 
-      let jawabanPilgan = {};
-      document.querySelectorAll("input[type='radio']:checked").forEach((el) => {
-        jawabanPilgan[el.name] = el.value;
-      });
+  async function submitUjian(e) {
+    e.preventDefault();
 
-      let jawabanEssay = {};
-      document.querySelectorAll("textarea[id^='essay']").forEach((el, idx) => {
-        jawabanEssay[`essay${idx + 1}`] = el.value;
-      });
-
-      try {
-        await addDoc(collection(db, "jawaban"), {
-          nama,
-          status,
-          alamat,
-          pilgan: jawabanPilgan,
-          essay: jawabanEssay,
-          waktu: new Date(),
-        });
-        alert("Jawaban berhasil disimpan!");
-        document.getElementById("formUjian").reset();
-      } catch (err) {
-        console.error("Error simpan:", err);
-        alert("Terjadi error, coba lagi.");
+    // cek kapan terakhir submit
+    const lastSubmit = localStorage.getItem("lastSubmitTime");
+    if (lastSubmit) {
+      const now = Date.now();
+      const diff = now - parseInt(lastSubmit);
+      if (diff < WAIT_TIME) {
+        const remaining = Math.ceil((WAIT_TIME - diff) / (1000 * 60));
+        alert(`Anda sudah mengerjakan. Silakan coba lagi dalam ${remaining} menit.`);
+        return;
       }
     }
-    window.submitUjian = submitUjian;
-  </script>
+
+    const nama = document.getElementById("nama").value;
+    const status = document.getElementById("status").value;
+    const alamat = document.getElementById("alamat").value;
+
+    let jawabanPilgan = {};
+    document.querySelectorAll("input[type='radio']:checked").forEach((el) => {
+      jawabanPilgan[el.name] = el.value;
+    });
+
+    let jawabanEssay = {};
+    document.querySelectorAll("textarea[id^='essay']").forEach((el, idx) => {
+      jawabanEssay[`essay${idx + 1}`] = el.value;
+    });
+
+    try {
+      await addDoc(collection(db, "jawaban"), {
+        nama,
+        status,
+        alamat,
+        pilgan: jawabanPilgan,
+        essay: jawabanEssay,
+        waktu: new Date(),
+      });
+
+      // simpan waktu terakhir submit ke localStorage
+      localStorage.setItem("lastSubmitTime", Date.now().toString());
+
+      alert("Jawaban berhasil disimpan! Anda hanya bisa mengisi lagi setelah 6 jam.");
+      document.getElementById("formUjian").reset();
+    } catch (err) {
+      console.error("Error simpan:", err);
+      alert("Terjadi error, coba lagi.");
+    }
+  }
+  window.submitUjian = submitUjian;
+</script>
+
 </head>
 <body class="bg-gray-50 p-4">
   <form id="formUjian" onsubmit="submitUjian(event)" class="max-w-3xl mx-auto bg-white p-5 sm:p-8 shadow-lg rounded-md">
