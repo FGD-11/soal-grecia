@@ -54,6 +54,7 @@
           <td class="border px-4 py-2">${data.nama || "-"}</td>
           <td class="border px-4 py-2">${data.status || "-"}</td>
           <td class="border px-4 py-2">${data.alamat || "-"}</td>
+          <td class="border px-4 py-2 text-center">${data.nilai ?? "-"}</td>
           <td class="border px-4 py-2">${formatTanggal(data.waktu) || "-"}</td>
         `;
         tbody.appendChild(tr);
@@ -73,6 +74,7 @@
             <th class="border px-4 py-2">Nama Peserta</th>
             <th class="border px-4 py-2">Status Peserta</th>
             <th class="border px-4 py-2">Alamat Peserta</th>
+            <th class="border px-4 py-2">Nilai</th>
             <th class="border px-4 py-2">Waktu Mengerjakan</th>
           </tr>
         </thead>
