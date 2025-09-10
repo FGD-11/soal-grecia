@@ -71,6 +71,14 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, collection, getDocs, getDoc, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+    // 🔐 Cek sesi login admin
+    const session = JSON.parse(localStorage.getItem("adminSession") || "{}");
+    if (!session.token || Date.now() > session.expiredAt) {
+    alert("Sesi login Anda telah berakhir. Silakan login ulang.");
+    localStorage.removeItem("adminSession");
+    window.location.href = "admin-login.html";
+    }
+    
     // 🔹 Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyAYNFwQxkIXvW9Z-uGWl8N4zhe2MJoBjfY",
