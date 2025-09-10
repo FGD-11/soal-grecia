@@ -6,8 +6,11 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
   <style>
-    body {
-      font-family: "Times New Roman", Times, serif;
+    body { font-family: "Times New Roman", Times, serif; }
+    .disabled {
+      background-color: #9ca3af !important;
+      cursor: not-allowed !important;
+      pointer-events: none;
     }
   </style>
 </head>
@@ -15,17 +18,53 @@
 
   <div class="space-y-8 w-full max-w-xl">
 
-    <a href="soal.html" class="block bg-green-600 hover:bg-green-700 text-white p-8 rounded-2xl shadow-lg text-center transition transform hover:scale-105">
+    <!-- Tombol soal -->
+    <a id="btnSoal" href="soal.html" 
+      class="block bg-green-600 hover:bg-green-700 text-white p-8 rounded-2xl shadow-lg text-center transition transform hover:scale-105">
       <h2 class="text-3xl font-bold mb-2">Mengerjakan Soal</h2>
-      <p class="text-lg">Klik disini untuk memulai mengerjakan soal</p>
+      <p id="textSoal" class="text-lg">Klik disini untuk memulai mengerjakan soal</p>
     </a>
 
-    <a href="hasil.html" class="block bg-green-600 hover:bg-green-700 text-white p-8 rounded-2xl shadow-lg text-center transition transform hover:scale-105">
+    <!-- Tombol hasil -->
+    <a href="hasil.html" 
+      class="block bg-green-600 hover:bg-green-700 text-white p-8 rounded-2xl shadow-lg text-center transition transform hover:scale-105">
       <h2 class="text-3xl font-bold mb-2">Melihat Hasil Jawaban</h2>
       <p class="text-lg">Klik disini untuk melihat hasil jawaban</p>
     </a>
 
   </div>
+
+  <script>
+    const WAIT_TIME = 12 * 60 * 60 * 1000; // 12 jam dalam ms
+    const lastSubmit = localStorage.getItem("lastSubmitTime");
+    const btnSoal = document.getElementById("btnSoal");
+    const textSoal = document.getElementById("textSoal");
+
+    if (lastSubmit) {
+      const now = Date.now();
+      const diff = now - parseInt(lastSubmit);
+
+      if (diff < WAIT_TIME) {
+        // Masih dalam masa tunggu
+        const remaining = WAIT_TIME - diff;
+
+        function updateCountdown() {
+          const sisa = Math.max(0, remaining - (Date.now() - now));
+          const jam = Math.floor(sisa / (1000 * 60 * 60));
+          const menit = Math.floor((sisa % (1000 * 60 * 60)) / (1000 * 60));
+          const detik = Math.floor((sisa % (1000 * 60)) / 1000);
+
+          textSoal.innerText = `Anda bisa mengerjakan lagi dalam ${jam} jam ${menit} menit ${detik} detik`;
+        }
+
+        btnSoal.classList.add("disabled");
+        btnSoal.removeAttribute("href");
+
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+      }
+    }
+  </script>
 
 </body>
 </html>
