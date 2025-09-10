@@ -68,9 +68,6 @@
   </div>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, getDocs, getDoc, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
     // 🔐 Cek sesi login admin
     const session = JSON.parse(localStorage.getItem("adminSession") || "{}");
     if (!session.token || Date.now() > session.expiredAt) {
@@ -78,6 +75,9 @@
     localStorage.removeItem("adminSession");
     window.location.href = "admin-login.html";
     }
+    
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, getDocs, getDoc, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     
     // 🔹 Firebase Config
     const firebaseConfig = {
