@@ -170,26 +170,6 @@
           pilganTable.appendChild(tr);
         }
 
-        // Essay Manual
-        const essayTable = document.getElementById("essayTable");
-        essayTable.innerHTML = "";
-        for (let i = 1; i <= Object.keys(data.essay || {}).length; i++) {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td class="p-2 border text-center">${i}</td>
-            <td class="p-2 border">${data.essay?.["essay" + i] || "-"}</td>
-            <td class="p-2 border">
-              <label><input type="radio" name="es${i}" value="benar"> ✅ Benar (+10)</label>
-              <label class="ml-2"><input type="radio" name="es${i}" value="salah"> ❌ Salah (0)</label>
-            </td>
-          `;
-          essayTable.appendChild(tr);
-        }
-
-        document.getElementById("modal").classList.remove("hidden");
-      }
-    }
-
     // 🔹 Hitung & Simpan Nilai
     async function saveNilai() {
       if (!currentDocId) return;
