@@ -8,26 +8,17 @@
 </head>
 <body class="bg-gray-100 flex flex-col h-screen">
 
-  <!-- Header mirip IG -->
+  <!-- Header -->
   <div class="bg-white border-b px-4 py-3 flex items-center gap-3 shadow-sm">
     <img src="https://via.placeholder.com/40" alt="avatar" class="w-10 h-10 rounded-full">
     <div>
       <h2 class="font-semibold text-gray-800">Herbal AI</h2>
-      <p class="text-xs text-gray-500">online</p>
+      <p class="text-xs text-green-600">online</p>
     </div>
   </div>
 
   <!-- Chat Box -->
   <div id="chatBox" class="flex-1 overflow-y-auto px-4 py-3 space-y-3 bg-gray-50">
-    <!-- contoh bubble -->
-    <!-- <div class="flex items-end gap-2">
-      <img src="https://via.placeholder.com/32" class="w-8 h-8 rounded-full">
-      <div class="bg-white p-3 rounded-2xl shadow-sm max-w-xs">Halo! Ada yang bisa dibantu?</div>
-    </div>
-
-    <div class="flex justify-end">
-      <div class="bg-green-600 text-white p-3 rounded-2xl max-w-xs">Saya mau tanya tentang jahe</div>
-    </div> -->
   </div>
 
   <!-- Input Box -->
@@ -44,32 +35,48 @@
       if (!userText) return;
 
       // bubble user
-      const userBubble = `
+      chatBox.innerHTML += `
         <div class="flex justify-end">
           <div class="bg-green-600 text-white p-3 rounded-2xl max-w-xs">${userText}</div>
         </div>`;
-      chatBox.innerHTML += userBubble;
-
-      chatBox.scrollTop = chatBox.scrollHeight;
-
-      // kirim ke server
-      const res = await fetch("http://localhost:3000/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: userText })
-      });
-      const data = await res.json();
-
-      // bubble AI
-      const aiBubble = `
-        <div class="flex items-end gap-2">
-          <img src="https://via.placeholder.com/32" class="w-8 h-8 rounded-full">
-          <div class="bg-white p-3 rounded-2xl shadow-sm max-w-xs">${data.reply}</div>
-        </div>`;
-      chatBox.innerHTML += aiBubble;
-
       chatBox.scrollTop = chatBox.scrollHeight;
       input.value = "";
+
+      // bubble loading (AI mengetik...)
+      const loadingId = Date.now();
+      chatBox.innerHTML += `
+        <div id="loading-${loadingId}" class="flex items-end gap-2">
+          <img src="https://via.placeholder.com/32" class="w-8 h-8 rounded-full">
+          <div class="bg-white p-3 rounded-2xl shadow-sm max-w-xs text-gray-500 italic">AI sedang mengetik...</div>
+        </div>`;
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      try {
+        // kirim ke server Express
+        const res = await fetch("http://localhost:8787/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question: userText })
+        });
+        const data = await res.json();
+
+        // hapus loading
+        document.getElementById(`loading-${loadingId}`).remove();
+
+        // bubble AI
+        chatBox.innerHTML += `
+          <div class="flex items-end gap-2">
+            <img src="https://via.placeholder.com/32" class="w-8 h-8 rounded-full">
+            <div class="bg-white p-3 rounded-2xl shadow-sm max-w-xs">${data.answer}</div>
+          </div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
+      } catch (err) {
+        document.getElementById(`loading-${loadingId}`).remove();
+        chatBox.innerHTML += `
+          <div class="flex items-end gap-2 text-red-600">
+            <div class="bg-white p-3 rounded-2xl shadow-sm max-w-xs">❌ Error: Gagal terhubung ke server</div>
+          </div>`;
+      }
     }
   </script>
 
