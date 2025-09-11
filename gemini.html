@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Firebase AI - Gemini Demo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans p-6">
+  <h1 class="text-2xl font-bold mb-4 text-center">Demo Firebase AI (Gemini 2.5 Flash)</h1>
+
+  <div class="max-w-xl mx-auto bg-white shadow-md rounded-lg p-4">
+    <textarea id="prompt" rows="4" class="w-full border p-2 rounded mb-3" placeholder="Tulis pertanyaanmu..."></textarea>
+    <button id="btnRun" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded w-full">Kirim ke Gemini</button>
+    <div id="output" class="mt-4 p-3 border rounded bg-gray-50 whitespace-pre-wrap"></div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAI, getGenerativeModel, GoogleAIBackend } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-ai.js";
+
+    // 🔹 Config dari kamu
+    const firebaseConfig = {
+      apiKey: "AIzaSyAYNFwQxkIXvW9Z-uGWl8N4zhe2MJoBjfY",
+      authDomain: "soal-grecia.firebaseapp.com",
+      projectId: "soal-grecia",
+      storageBucket: "soal-grecia.firebasestorage.app",
+      messagingSenderId: "301760637420",
+      appId: "1:301760637420:web:d6aebf003c50c6cd1bf8c9",
+      measurementId: "G-JCY3EZE06C",
+    };
+
+    // 🔹 Init Firebase + AI
+    const app = initializeApp(firebaseConfig);
+    const ai = getAI(app, { backend: new GoogleAIBackend() });
+    const model = getGenerativeModel(ai, { model: "gemini-2.5-flash" });
+
+    // 🔹 Fungsi kirim prompt
+    document.getElementById("btnRun").addEventListener("click", async () => {
+      const prompt = document.getElementById("prompt").value.trim();
+      if (!prompt) return alert("Isi prompt dulu ya!");
+
+      document.getElementById("output").innerText = "⏳ Sedang memproses...";
+      try {
+        const result = await model.generateContent(prompt);
+        const text = result.response.text();
+        document.getElementById("output").innerText = text;
+      } catch (err) {
+        console.error(err);
+        document.getElementById("output").innerText = "❌ Error: " + err.message;
+      }
+    });
+  </script>
+</body>
+</html>
