@@ -1,33 +1,77 @@
-import express from "express";
-import fetch from "node-fetch";
-import cors from "cors";
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Herbal AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex flex-col h-screen">
 
-const app = express();
-app.use(cors());
-app.use(express.json());
+  <!-- Header mirip IG -->
+  <div class="bg-white border-b px-4 py-3 flex items-center gap-3 shadow-sm">
+    <img src="https://via.placeholder.com/40" alt="avatar" class="w-10 h-10 rounded-full">
+    <div>
+      <h2 class="font-semibold text-gray-800">Herbal AI</h2>
+      <p class="text-xs text-gray-500">online</p>
+    </div>
+  </div>
 
-app.post("/chat", async (req, res) => {
-  const { prompt } = req.body;
+  <!-- Chat Box -->
+  <div id="chatBox" class="flex-1 overflow-y-auto px-4 py-3 space-y-3 bg-gray-50">
+    <!-- contoh bubble -->
+    <!-- <div class="flex items-end gap-2">
+      <img src="https://via.placeholder.com/32" class="w-8 h-8 rounded-full">
+      <div class="bg-white p-3 rounded-2xl shadow-sm max-w-xs">Halo! Ada yang bisa dibantu?</div>
+    </div>
 
-  try {
-    const ollamaRes = await fetch("http://localhost:11434/api/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "phi3",
-        prompt,
-        stream: false
-      }),
-    });
+    <div class="flex justify-end">
+      <div class="bg-green-600 text-white p-3 rounded-2xl max-w-xs">Saya mau tanya tentang jahe</div>
+    </div> -->
+  </div>
 
-    const json = await ollamaRes.json();
-    console.log("OLLAMA REPLY:", json); // log debug
+  <!-- Input Box -->
+  <div class="bg-white border-t p-3 flex items-center gap-2">
+    <input id="userInput" class="flex-1 border rounded-full px-4 py-2 text-sm focus:outline-none" placeholder="Ketik pesan...">
+    <button onclick="sendMessage()" class="bg-green-600 text-white px-4 py-2 rounded-full">Kirim</button>
+  </div>
 
-    res.json({ reply: json.response || "⚠️ Tidak ada jawaban dari AI." });
-  } catch (err) {
-    console.error(err);
-    res.json({ reply: "⚠️ Error server: " + err.message });
-  }
-});
+  <script>
+    async function sendMessage() {
+      const input = document.getElementById("userInput");
+      const chatBox = document.getElementById("chatBox");
+      const userText = input.value.trim();
+      if (!userText) return;
 
-app.listen(3000, () => console.log("✅ Server AI jalan di http://localhost:3000"));
+      // bubble user
+      const userBubble = `
+        <div class="flex justify-end">
+          <div class="bg-green-600 text-white p-3 rounded-2xl max-w-xs">${userText}</div>
+        </div>`;
+      chatBox.innerHTML += userBubble;
+
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      // kirim ke server
+      const res = await fetch("http://localhost:3010/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: userText })
+      });
+      const data = await res.json();
+
+      // bubble AI
+      const aiBubble = `
+        <div class="flex items-end gap-2">
+          <img src="https://via.placeholder.com/32" class="w-8 h-8 rounded-full">
+          <div class="bg-white p-3 rounded-2xl shadow-sm max-w-xs">${data.reply}</div>
+        </div>`;
+      chatBox.innerHTML += aiBubble;
+
+      chatBox.scrollTop = chatBox.scrollHeight;
+      input.value = "";
+    }
+  </script>
+
+</body>
+</html>
