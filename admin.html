@@ -28,9 +28,9 @@
     </div>
   </div>
 
-  <!-- Modal Detail -->
+  <!-- Modal Pilihan Ganda -->
   <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
-    <div class="bg-white rounded-lg shadow-lg p-6 max-w-5xl w-full">
+    <div class="bg-white rounded-lg shadow-lg p-6 max-w-3xl w-full">
       <h3 id="modalTitle" class="text-xl font-bold mb-4 text-center"></h3>
 
       <div class="overflow-y-auto max-h-[70vh]">
@@ -46,18 +46,6 @@
           </thead>
           <tbody id="pilganTable"></tbody>
         </table>
-
-        <h4 class="font-semibold mb-2">Essay (manual):</h4>
-        <table class="w-full border">
-          <thead>
-            <tr class="bg-gray-100">
-              <th class="p-2 border">No</th>
-              <th class="p-2 border">Jawaban</th>
-              <th class="p-2 border">Penilaian</th>
-            </tr>
-          </thead>
-          <tbody id="essayTable"></tbody>
-        </table>
       </div>
 
       <div class="mt-4 flex justify-between">
@@ -71,7 +59,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, collection, getDocs, getDoc, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     
-    // 🔹 Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyAYNFwQxkIXvW9Z-uGWl8N4zhe2MJoBjfY",
       authDomain: "soal-grecia.firebaseapp.com",
@@ -85,7 +72,6 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // 🔹 Kunci Jawaban Pilihan Ganda
     const kunciPilgan = {
       soal1: "Kunyit",
       soal2: "Gula Darah",
@@ -102,7 +88,6 @@
     let currentDocId = null;
     let nilaiPilganOtomatis = 0;
 
-    // 🔹 Load Data ke Tabel
     async function loadJawaban() {
       const tableBody = document.getElementById("tableBody");
       tableBody.innerHTML = "<tr><td colspan='6' class='text-center p-3'>Loading...</td></tr>";
@@ -112,7 +97,6 @@
 
       querySnapshot.forEach((docSnap) => {
         const data = docSnap.data();
-
         const row = document.createElement("tr");
         row.classList.add("border-b");
 
@@ -132,7 +116,6 @@
       });
     }
 
-    // 🔹 Tampilkan Detail Jawaban
     async function showDetail(id) {
       currentDocId = id;
       const docRef = doc(db, "jawaban", id);
@@ -141,10 +124,12 @@
       if (docSnap.exists()) {
         const data = docSnap.data();
         nilaiPilganOtomatis = 0;
-
         document.getElementById("modalTitle").innerText = "Detail Jawaban - " + data.nama;
 
-        // Pilihan Ganda Otomatis
+        // tampilkan modal
+        document.getElementById("modal").classList.remove("hidden");
+
+        // tampilkan jawaban pilgan
         const pilganTable = document.getElementById("pilganTable");
         pilganTable.innerHTML = "";
         for (let i = 1; i <= 10; i++) {
@@ -168,42 +153,21 @@
             <td class="p-2 border text-center">${penilaian}</td>
           `;
           pilganTable.appendChild(tr);
-          }
         }
+      }
     }
 
-    // 🔹 Hitung & Simpan Nilai
     async function saveNilai() {
       if (!currentDocId) return;
-
-      let totalNilai = nilaiPilganOtomatis;
-
-      // Hitung Essay (manual)
-      const docRef = doc(db, "jawaban", currentDocId);
-      const docSnap = await getDoc(docRef);
-      const data = docSnap.data();
-      const jumlahEssay = Object.keys(data.essay || {}).length;
-
-      for (let i = 1; i <= jumlahEssay; i++) {
-        const radios = document.getElementsByName("es" + i);
-        radios.forEach(r => {
-          if (r.checked && r.value === "benar") {
-            totalNilai += 10;
-          }
-        });
-      }
-
       await updateDoc(doc(db, "jawaban", currentDocId), {
-        nilai: totalNilai,
+        nilai: nilaiPilganOtomatis,
         dinilai: true
       });
-
-      alert("Nilai berhasil disimpan: " + totalNilai);
+      alert("Nilai otomatis tersimpan: " + nilaiPilganOtomatis);
       closeModal();
       loadJawaban();
     }
 
-    // 🔹 Hapus Peserta
     async function deletePeserta(id) {
       if (confirm("Apakah Anda yakin ingin menghapus peserta ini?")) {
         await deleteDoc(doc(db, "jawaban", id));
@@ -212,18 +176,15 @@
       }
     }
 
-    // 🔹 Tutup Modal
     function closeModal() {
       document.getElementById("modal").classList.add("hidden");
     }
 
-    // Expose ke global
     window.showDetail = showDetail;
     window.closeModal = closeModal;
     window.saveNilai = saveNilai;
     window.deletePeserta = deletePeserta;
     window.onload = loadJawaban;
   </script>
-
 </body>
 </html>
