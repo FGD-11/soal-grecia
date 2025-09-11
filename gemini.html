@@ -28,6 +28,22 @@
   </div>
 
   <script>
+  window.onload = () => {
+  const chatBox = document.getElementById("chatBox");
+  const greeting = `
+    <div class="flex items-end gap-2">
+      <img src="https://via.placeholder.com/32" class="w-8 h-8 rounded-full">
+      <div class="bg-white p-3 rounded-2xl shadow-sm max-w-xs">
+        Assalamu 'alaikum. Nama saya <b>Gethina</b> (Grecia Edu Thibbun Nabawi). 
+        Saya merupakan Artificial Intelligence dari Grecia. 
+        Ada yang bisa saya bantu mengenai: herbal, sujok, bekam, penyakit, dan seputar kesehatan?
+      </div>
+    </div>`;
+  chatBox.innerHTML += greeting;
+  chatBox.scrollTop = chatBox.scrollHeight;
+};
+
+    
     async function sendMessage() {
       const input = document.getElementById("userInput");
       const chatBox = document.getElementById("chatBox");
