@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Gethina</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex flex-col h-screen">
+
+  <!-- Header -->
+  <div class="bg-white border-b px-4 py-3 flex items-center gap-3 shadow-sm">
+    <img src="https://via.placeholder.com/40" alt="avatar" class="w-10 h-10 rounded-full">
+    <div>
+      <h2 class="font-semibold text-gray-800">Gethina AI</h2>
+      <p class="text-xs text-gray-500">online</p>
+    </div>
+  </div>
+
+  <!-- Chat Box -->
+  <div id="chatBox" class="flex-1 overflow-y-auto px-4 py-3 space-y-3 bg-gray-50"></div>
+
+  <!-- Input Box -->
+  <div class="bg-white border-t p-3 flex items-center gap-2">
+    <input id="userInput" class="flex-1 border rounded-full px-4 py-2 text-sm focus:outline-none" placeholder="Ketik pesan...">
+    <button onclick="sendMessage()" class="bg-green-600 text-white px-4 py-2 rounded-full">Kirim</button>
+  </div>
+
+  <script>
+    const chatBox = document.getElementById("chatBox");
+
+    // Greeting otomatis saat load
+    window.onload = () => {
+      const greeting = `
+        <div class="flex items-end gap-2">
+          <img src="https://via.placeholder.com/32" class="w-8 h-8 rounded-full">
+          <div class="bg-white p-3 rounded-2xl shadow-sm max-w-xs">
+            Assalamu 'alaikum. Nama saya <b>Gethina</b> (Grecia Edu Thibbun Nabawi). 
+            Saya merupakan Artificial Intelligence dari Grecia. 
+            Ada yang bisa saya bantu mengenai: herbal, sujok, bekam, penyakit, dan seputar kesehatan?
+          </div>
+        </div>`;
+      chatBox.innerHTML += greeting;
+      chatBox.scrollTop = chatBox.scrollHeight;
+    };
+
+    async function sendMessage() {
+      const input = document.getElementById("userInput");
+      const userText = input.value.trim();
+      if (!userText) return;
+
+      // Bubble user
+      chatBox.innerHTML += `
+        <div class="flex justify-end">
+          <div class="bg-green-600 text-white p-3 rounded-2xl max-w-xs">${userText}</div>
+        </div>`;
+      chatBox.scrollTop = chatBox.scrollHeight;
+      input.value = "";
+
+      // Bubble AI kosong dulu
+      const aiBubble = document.createElement("div");
+      aiBubble.className = "flex items-end gap-2";
+      aiBubble.innerHTML = `
+        <img src="https://via.placeholder.com/32" class="w-8 h-8 rounded-full">
+        <div class="bg-white p-3 rounded-2xl shadow-sm max-w-xs" id="aiText"></div>`;
+      chatBox.appendChild(aiBubble);
+      const aiText = aiBubble.querySelector("#aiText");
+
+      // Kirim ke server
+      const res = await fetch("http://localhost:3000/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: userText })
+      });
+
+      // 🔹 Kalau direct (produk), tampilkan langsung
+      if (res.headers.get("content-type")?.includes("application/json")) {
+        const data = await res.json();
+        aiText.textContent = data.reply;
+        chatBox.scrollTop = chatBox.scrollHeight;
+        return;
+      }
+
+      // 🔹 Kalau streaming
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split("\n").filter(line => line.startsWith("data:"));
+        for (const line of lines) {
+          const msg = line.replace("data: ", "");
+          if (msg === "[DONE]") continue;
+          aiText.textContent += msg;
+          chatBox.scrollTop = chatBox.scrollHeight;
+        }
+      }
+    }
+  </script>
+
+</body>
+</html>
