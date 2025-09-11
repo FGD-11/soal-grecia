@@ -26,79 +26,82 @@
     <button onclick="sendMessage()" class="bg-green-600 text-white px-4 py-2 rounded-full">Kirim</button>
   </div>
 
-  <script>
-    const chatBox = document.getElementById("chatBox");
+<script>
+  const chatBox = document.getElementById("chatBox");
 
-    // Greeting otomatis saat load
-    window.onload = () => {
-      const greeting = `
-        <div class="flex items-end gap-2">
-          <img src="https://via.placeholder.com/32" class="w-8 h-8 rounded-full">
-          <div class="bg-white p-3 rounded-2xl shadow-sm max-w-xs">
-            Assalamu 'alaikum. Nama saya <b>Gethina</b> (Grecia Edu Thibbun Nabawi). 
-            Saya merupakan Artificial Intelligence dari Grecia. 
-            Ada yang bisa saya bantu mengenai: herbal, sujok, bekam, penyakit, dan seputar kesehatan?
-          </div>
-        </div>`;
-      chatBox.innerHTML += greeting;
-      chatBox.scrollTop = chatBox.scrollHeight;
-    };
-
-    async function sendMessage() {
-      const input = document.getElementById("userInput");
-      const userText = input.value.trim();
-      if (!userText) return;
-
-      // Bubble user
-      chatBox.innerHTML += `
-        <div class="flex justify-end">
-          <div class="bg-green-600 text-white p-3 rounded-2xl max-w-xs">${userText}</div>
-        </div>`;
-      chatBox.scrollTop = chatBox.scrollHeight;
-      input.value = "";
-
-      // Bubble AI kosong dulu
-      const aiBubble = document.createElement("div");
-      aiBubble.className = "flex items-end gap-2";
-      aiBubble.innerHTML = `
+  // Greeting otomatis saat load
+  window.onload = () => {
+    const greeting = `
+      <div class="flex items-end gap-2">
         <img src="https://via.placeholder.com/32" class="w-8 h-8 rounded-full">
-        <div class="bg-white p-3 rounded-2xl shadow-sm max-w-xs" id="aiText"></div>`;
-      chatBox.appendChild(aiBubble);
-      const aiText = aiBubble.querySelector("#aiText");
+        <div class="bg-white p-3 rounded-2xl shadow-sm max-w-xs">
+          Assalamu 'alaikum. Nama saya <b>Gethina</b> (Grecia Edu Thibbun Nabawi). 
+          Saya merupakan Artificial Intelligence dari Grecia. 
+          Ada yang bisa saya bantu mengenai: herbal, sujok, bekam, penyakit, dan seputar kesehatan?
+        </div>
+      </div>`;
+    chatBox.innerHTML += greeting;
+    chatBox.scrollTop = chatBox.scrollHeight;
+  };
 
-      // Kirim ke server
-      const res = await fetch("http://localhost:8787/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: userText })
-      });
+  async function sendMessage() {
+    const input = document.getElementById("userInput");
+    const userText = input.value.trim();
+    if (!userText) return;
 
-      // 🔹 Kalau direct (produk), tampilkan langsung
-      if (res.headers.get("content-type")?.includes("application/json")) {
-        const data = await res.json();
-        aiText.textContent = data.reply;
+    // Bubble user
+    chatBox.innerHTML += `
+      <div class="flex justify-end">
+        <div class="bg-green-600 text-white p-3 rounded-2xl max-w-xs">${userText}</div>
+      </div>`;
+    chatBox.scrollTop = chatBox.scrollHeight;
+    input.value = "";
+
+    // Bubble AI (dengan "sedang mengetik...")
+    const aiBubble = document.createElement("div");
+    aiBubble.className = "flex items-end gap-2";
+    aiBubble.innerHTML = `
+      <img src="https://via.placeholder.com/32" class="w-8 h-8 rounded-full">
+      <div class="bg-white p-3 rounded-2xl shadow-sm max-w-xs" id="aiText">
+        <span class="text-gray-400 italic">sedang mengetik...</span>
+      </div>`;
+    chatBox.appendChild(aiBubble);
+    const aiText = aiBubble.querySelector("#aiText");
+
+    // Kirim ke server
+    const res = await fetch("http://localhost:8787/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt: userText })
+    });
+
+    // 🔹 Kalau direct (produk), tampilkan langsung
+    if (res.headers.get("content-type")?.includes("application/json")) {
+      const data = await res.json();
+      aiText.textContent = data.reply;
+      chatBox.scrollTop = chatBox.scrollHeight;
+      return;
+    }
+
+    // 🔹 Kalau streaming
+    aiText.textContent = ""; // kosongkan dulu "sedang mengetik..."
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder("utf-8");
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const chunk = decoder.decode(value, { stream: true });
+      const lines = chunk.split("\n").filter(line => line.startsWith("data:"));
+      for (const line of lines) {
+        const msg = line.replace("data: ", "");
+        if (msg === "[DONE]") continue;
+        aiText.textContent += msg;
         chatBox.scrollTop = chatBox.scrollHeight;
-        return;
-      }
-
-      // 🔹 Kalau streaming
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder("utf-8");
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split("\n").filter(line => line.startsWith("data:"));
-        for (const line of lines) {
-          const msg = line.replace("data: ", "");
-          if (msg === "[DONE]") continue;
-          aiText.textContent += msg;
-          chatBox.scrollTop = chatBox.scrollHeight;
-        }
       }
     }
-  </script>
+  }
+</script>
 
 </body>
 </html>
