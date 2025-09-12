@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin - Dashboard Ujian</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- jsPDF dan html2canvas -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body class="bg-gray-100 font-serif">
 
@@ -33,7 +36,7 @@
     <div class="bg-white rounded-lg shadow-lg p-6 max-w-3xl w-full">
       <h3 id="modalTitle" class="text-xl font-bold mb-4 text-center"></h3>
 
-      <div class="overflow-y-auto max-h-[70vh]">
+      <div class="overflow-y-auto max-h-[60vh]">
         <h4 class="font-semibold mb-2">Pilihan Ganda (otomatis):</h4>
         <table class="w-full border mb-4">
           <thead>
@@ -50,6 +53,7 @@
 
       <div class="mt-4 flex justify-between">
         <button onclick="saveNilai()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Beri Nilai</button>
+        <button onclick="exportPDF()" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Cetak PDF</button>
         <button onclick="closeModal()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Tutup</button>
       </div>
     </div>
@@ -141,7 +145,6 @@
             nilaiPilganOtomatis += 10;
             penilaian = "✅ Benar (+10)";
           } else {
-            nilaiPilganOtomatis -= 0;
             penilaian = "❌ Salah (-0)";
           }
 
@@ -180,10 +183,56 @@
       document.getElementById("modal").classList.add("hidden");
     }
 
+    async function exportPDF() {
+      if (!currentDocId) return;
+
+      const docRef = doc(db, "jawaban", currentDocId);
+      const docSnap = await getDoc(docRef);
+
+      if (!docSnap.exists()) return;
+
+      const data = docSnap.data();
+      const namaPeserta = data.nama || "Unknown";
+      const tglMengerjakan = data.waktu?.seconds
+        ? new Date(data.waktu.seconds * 1000).toLocaleDateString("id-ID")
+        : new Date().toLocaleDateString("id-ID");
+
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF();
+
+      pdf.setFontSize(16);
+      pdf.text(`Data Jawaban Peserta`, 105, 15, { align: "center" });
+
+      pdf.setFontSize(12);
+      pdf.text(`Nama Peserta: ${namaPeserta}`, 15, 30);
+      pdf.text(`Tanggal Mengerjakan: ${tglMengerjakan}`, 15, 40);
+
+      // Buat tabel jawaban
+      const tableData = [];
+      for (let i = 1; i <= 10; i++) {
+        const jawabanUser = data.pilgan?.["soal" + i] || "-";
+        const jawabanKunci = kunciPilgan["soal" + i] || "-";
+        const penilaian = jawabanUser === jawabanKunci ? "Benar (+10)" : "Salah (-0)";
+        tableData.push([i, jawabanUser, jawabanKunci, penilaian]);
+      }
+
+      pdf.autoTable({
+        startY: 50,
+        head: [["No", "Jawaban", "Kunci", "Penilaian"]],
+        body: tableData,
+        styles: { fontSize: 10 },
+        headStyles: { fillColor: [220, 220, 220] }
+      });
+
+      const fileName = `pesertaGrecia-${namaPeserta.replace(/\s+/g, "_")}-${tglMengerjakan.replace(/\//g, "-")}.pdf`;
+      pdf.save(fileName);
+    }
+
     window.showDetail = showDetail;
     window.closeModal = closeModal;
     window.saveNilai = saveNilai;
     window.deletePeserta = deletePeserta;
+    window.exportPDF = exportPDF;
     window.onload = loadJawaban;
   </script>
 </body>
