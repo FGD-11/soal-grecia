@@ -44,19 +44,38 @@
 
     async function loadHasil() {
       const tbody = document.getElementById("tbodyHasil");
-      tbody.innerHTML = "";
+      tbody.innerHTML = "<tr><td colspan='5' class='text-center p-3'>Loading...</td></tr>";
 
       const querySnapshot = await getDocs(collection(db, "jawaban"));
+      let results = [];
+
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        const tr = document.createElement("tr");
+        results.push({
+          nama: data.nama || "-",
+          status: data.status || "-",
+          alamat: data.alamat || "-",
+          nilai: data.nilai ?? 0,
+          waktu: data.waktu ? data.waktu.toDate() : new Date(9999, 0, 1)
+        });
+      });
 
+      // Urutkan: nilai terbesar dulu, jika sama waktu tercepat
+      results.sort((a, b) => {
+        if (b.nilai !== a.nilai) return b.nilai - a.nilai;
+        return a.waktu - b.waktu;
+      });
+
+      tbody.innerHTML = "";
+      results.forEach((data, index) => {
+        const tr = document.createElement("tr");
+        tr.classList.add(index === 0 ? "bg-yellow-100 font-bold" : ""); // Highlight pemenang
         tr.innerHTML = `
-          <td class="border px-4 py-2">${data.nama || "-"}</td>
-          <td class="border px-4 py-2">${data.status || "-"}</td>
-          <td class="border px-4 py-2">${data.alamat || "-"}</td>
-          <td class="border px-4 py-2 text-center">${data.nilai ?? "-"}</td>
-          <td class="border px-4 py-2">${formatTanggal(data.waktu) || "-"}</td>
+          <td class="border px-4 py-2">${data.nama}</td>
+          <td class="border px-4 py-2">${data.status}</td>
+          <td class="border px-4 py-2">${data.alamat}</td>
+          <td class="border px-4 py-2 text-center">${data.nilai}</td>
+          <td class="border px-4 py-2">${formatTanggal(data.waktu)}</td>
         `;
         tbody.appendChild(tr);
       });
