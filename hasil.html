@@ -9,6 +9,25 @@
   <style>
     body { font-family: "Times New Roman", Times, serif; }
   </style>
+</head>
+<body class="bg-gray-100 p-6">
+  <div class="max-w-5xl mx-auto bg-white p-6 rounded-lg shadow-lg">
+    <h1 class="text-2xl sm:text-3xl font-bold mb-6 text-center">Hasil Ujian Peserta</h1>
+    <div class="overflow-x-auto">
+      <table class="table-auto w-full border-collapse border border-gray-300">
+        <thead class="bg-gray-200">
+          <tr>
+            <th class="border px-4 py-2">Nama Peserta</th>
+            <th class="border px-4 py-2">Status Peserta</th>
+            <th class="border px-4 py-2">Alamat Peserta</th>
+            <th class="border px-4 py-2">Nilai</th>
+            <th class="border px-4 py-2">Waktu Mengerjakan</th>
+          </tr>
+        </thead>
+        <tbody id="tbodyHasil"></tbody>
+      </table>
+    </div>
+  </div>
 
   <!-- Firebase -->
   <script type="module">
@@ -30,7 +49,10 @@
 
     function formatTanggal(ts) {
       if (!ts) return "-";
-      let date = ts.toDate ? ts.toDate() : new Date(ts);
+      let date;
+      if (ts.toDate) date = ts.toDate();          // Firestore Timestamp
+      else if (ts.seconds) date = new Date(ts.seconds * 1000);
+      else date = new Date(ts);                   // fallback
       return date.toLocaleString("id-ID", {
         weekday: "long",
         year: "numeric",
@@ -49,18 +71,18 @@
       const querySnapshot = await getDocs(collection(db, "jawaban"));
       let results = [];
 
-      querySnapshot.forEach((doc) => {
+      querySnapshot.forEach(doc => {
         const data = doc.data();
         results.push({
           nama: data.nama || "-",
           status: data.status || "-",
           alamat: data.alamat || "-",
-          nilai: data.nilai ?? 0,
-          waktu: data.waktu ? data.waktu.toDate() : new Date(9999, 0, 1)
+          nilai: typeof data.nilai === "number" ? data.nilai : 0,
+          waktu: data.waktu ? (data.waktu.toDate ? data.waktu.toDate() : new Date(data.waktu)) : new Date(9999,0,1)
         });
       });
 
-      // Urutkan: nilai terbesar dulu, jika sama waktu tercepat
+      // Urutkan: nilai terbesar dulu, jika sama urut waktu tercepat
       results.sort((a, b) => {
         if (b.nilai !== a.nilai) return b.nilai - a.nilai;
         return a.waktu - b.waktu;
@@ -69,7 +91,7 @@
       tbody.innerHTML = "";
       results.forEach((data, index) => {
         const tr = document.createElement("tr");
-        tr.classList.add(index === 0 ? "bg-yellow-100 font-bold" : ""); // Highlight pemenang
+        if (index === 0) tr.classList.add("bg-yellow-100", "font-bold"); // highlight pemenang
         tr.innerHTML = `
           <td class="border px-4 py-2">${data.nama}</td>
           <td class="border px-4 py-2">${data.status}</td>
@@ -83,24 +105,5 @@
 
     window.onload = loadHasil;
   </script>
-</head>
-<body class="bg-gray-100 p-6">
-  <div class="max-w-5xl mx-auto bg-white p-6 rounded-lg shadow-lg">
-    <h1 class="text-2xl sm:text-3xl font-bold mb-6 text-center">Hasil Ujian Peserta</h1>
-    <div class="overflow-x-auto">
-      <table class="table-auto w-full border-collapse border border-gray-300">
-        <thead class="bg-gray-200">
-          <tr>
-            <th class="border px-4 py-2">Nama Peserta</th>
-            <th class="border px-4 py-2">Status Peserta</th>
-            <th class="border px-4 py-2">Alamat Peserta</th>
-            <th class="border px-4 py-2">Nilai</th>
-            <th class="border px-4 py-2">Waktu Mengerjakan</th>
-          </tr>
-        </thead>
-        <tbody id="tbodyHasil"></tbody>
-      </table>
-    </div>
-  </div>
 </body>
 </html>
