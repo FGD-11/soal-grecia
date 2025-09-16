@@ -3,105 +3,128 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chat Gethina</title>
+  <title>Grecia Chat</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Menghilangkan scrollbar tapi tetap bisa di-scroll */
+    #chatbox::-webkit-scrollbar {
+        display: none;
+    }
+    #chatbox {
+        -ms-overflow-style: none; /* IE and Edge */
+        scrollbar-width: none; /* Firefox */
+    }
+  </style>
 </head>
-<body class="bg-gray-100 flex flex-col h-screen">
+<body class="bg-white font-sans">
+  
+  <div class="h-screen flex flex-col">
+    
+    <header class="bg-white p-3 flex items-center shadow-sm z-10 border-b border-gray-200">
+      <div class="flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+        <h1 class="ml-3 text-lg font-bold text-gray-800">Grecia Ai</h1>
+      </div>
+      
+      </header>
 
-  <!-- Header -->
-  <div class="bg-white border-b px-4 py-3 flex items-center gap-3 shadow-sm">
-    <img src="https://via.placeholder.com/40" alt="avatar" class="w-10 h-10 rounded-full">
-    <div>
-      <h2 class="font-semibold text-gray-800">Gethina AI</h2>
-      <p class="text-xs text-gray-500">online</p>
-    </div>
+    <main id="chatbox" class="flex-1 overflow-y-auto p-4 space-y-4 bg-white">
+      </main>
+
+    <footer class="bg-white p-2 flex items-center border-t border-gray-200">
+      <div class="flex-1 mx-2">
+        <input type="text" id="input" placeholder="Aa" class="w-full bg-gray-200 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+      </div>
+
+      <button onclick="sendMessage()" class="text-blue-500">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
+        </svg>
+      </button>
+    </footer>
   </div>
 
-  <!-- Chat Box -->
-  <div id="chatBox" class="flex-1 overflow-y-auto px-4 py-3 space-y-3 bg-gray-50"></div>
+  <script>
+    const chatbox = document.getElementById("chatbox");
+    const inputField = document.getElementById("input");
 
-  <!-- Input Box -->
-  <div class="bg-white border-t p-3 flex items-center gap-2">
-    <input id="userInput" class="flex-1 border rounded-full px-4 py-2 text-sm focus:outline-none" placeholder="Ketik pesan...">
-    <button onclick="sendMessage()" class="bg-green-600 text-white px-4 py-2 rounded-full">Kirim</button>
-  </div>
-
-<script>
-  const chatBox = document.getElementById("chatBox");
-
-  // Greeting otomatis saat load
-  window.onload = () => {
-    const greeting = `
-      <div class="flex items-end gap-2">
-        <img src="https://via.placeholder.com/32" class="w-8 h-8 rounded-full">
-        <div class="bg-white p-3 rounded-2xl shadow-sm max-w-xs">
-          Assalamu 'alaikum. Nama saya <b>Gethina</b> (Grecia Edu Thibbun Nabawi). 
-          Saya merupakan Artificial Intelligence dari Grecia. 
-          Ada yang bisa saya bantu mengenai: herbal, sujok, bekam, penyakit, dan seputar kesehatan?
-        </div>
-      </div>`;
-    chatBox.innerHTML += greeting;
-    chatBox.scrollTop = chatBox.scrollHeight;
-  };
-
-  async function sendMessage() {
-    const input = document.getElementById("userInput");
-    const userText = input.value.trim();
-    if (!userText) return;
-
-    // Bubble user
-    chatBox.innerHTML += `
-      <div class="flex justify-end">
-        <div class="bg-green-600 text-white p-3 rounded-2xl max-w-xs">${userText}</div>
-      </div>`;
-    chatBox.scrollTop = chatBox.scrollHeight;
-    input.value = "";
-
-    // Bubble AI (dengan "sedang mengetik...")
-    const aiBubble = document.createElement("div");
-    aiBubble.className = "flex items-end gap-2";
-    aiBubble.innerHTML = `
-      <img src="https://via.placeholder.com/32" class="w-8 h-8 rounded-full">
-      <div class="bg-white p-3 rounded-2xl shadow-sm max-w-xs" id="aiText">
-        <span class="text-gray-400 italic">sedang mengetik...</span>
-      </div>`;
-    chatBox.appendChild(aiBubble);
-    const aiText = aiBubble.querySelector("#aiText");
-
-    // Kirim ke server
-    const res = await fetch("/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt: userText })
+    inputField.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        sendMessage();
+      }
     });
 
-    // 🔹 Kalau direct (produk), tampilkan langsung
-    if (res.headers.get("content-type")?.includes("application/json")) {
-      const data = await res.json();
-      aiText.textContent = data.reply;
-      chatBox.scrollTop = chatBox.scrollHeight;
-      return;
-    }
+    async function sendMessage() {
+      const input = inputField.value.trim();
+      if (!input) return;
 
-    // 🔹 Kalau streaming
-    aiText.textContent = ""; // kosongkan dulu "sedang mengetik..."
-    const reader = res.body.getReader();
-    const decoder = new TextDecoder("utf-8");
+      // Gelembung chat PENGGUNA (biru, kanan)
+      chatbox.innerHTML += `
+        <div class="flex justify-end">
+          <div class="bg-blue-500 text-white px-4 py-2 rounded-2xl max-w-xs shadow">
+            ${input}
+          </div>
+        </div>
+      `;
+      
+      inputField.value = "";
+      chatbox.scrollTop = chatbox.scrollHeight;
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      const chunk = decoder.decode(value, { stream: true });
-      const lines = chunk.split("\n").filter(line => line.startsWith("data:"));
-      for (const line of lines) {
-        const msg = line.replace("data: ", "");
-        if (msg === "[DONE]") continue;
-        aiText.textContent += msg;
-        chatBox.scrollTop = chatBox.scrollHeight;
+      // Indikator mengetik dari BOT
+      const typingIndicator = document.createElement('div');
+      typingIndicator.id = 'typing-indicator';
+      typingIndicator.innerHTML = `
+        <div class="flex justify-start items-end gap-2">
+          <img src="logo.png" alt="bot" class="w-8 h-8 rounded-full">
+          <div class="bg-gray-200 text-black px-4 py-2 rounded-2xl">
+            <div class="flex items-center space-x-1">
+              <span class="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></span>
+              <span class="w-2 h-2 bg-gray-400 rounded-full animate-pulse [animation-delay:0.2s]"></span>
+              <span class="w-2 h-2 bg-gray-400 rounded-full animate-pulse [animation-delay:0.4s]"></span>
+            </div>
+          </div>
+        </div>
+      `;
+      chatbox.appendChild(typingIndicator);
+      chatbox.scrollTop = chatbox.scrollHeight;
+
+      try {
+        const response = await fetch("https://825a2a4a1a29.ngrok-free.app/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: input })
+        });
+        const data = await response.json();
+
+        // Hapus indikator mengetik
+        chatbox.removeChild(typingIndicator);
+
+        // Gelembung chat BOT (abu-abu, kiri)
+        chatbox.innerHTML += `
+          <div class="flex justify-start items-end gap-2">
+            <img src="logo.png" alt="bot" class="w-8 h-8 rounded-full">
+            <div class="bg-gray-200 text-black px-4 py-2 rounded-2xl max-w-xs shadow">
+              ${data.reply}
+            </div>
+          </div>
+        `;
+      } catch (error) {
+        console.error("Error:", error);
+        if(document.getElementById('typing-indicator')) {
+          chatbox.removeChild(document.getElementById('typing-indicator'));
+        }
+        chatbox.innerHTML += `
+          <div class="flex justify-start items-end gap-2">
+            <img src="logo.png" alt="bot" class="w-8 h-8 rounded-full">
+            <div class="bg-red-100 text-red-700 px-4 py-2 rounded-2xl max-w-xs shadow">
+              ⚠️ Gagal terhubung.
+            </div>
+          </div>
+        `;
       }
+      chatbox.scrollTop = chatbox.scrollHeight;
     }
-  }
-</script>
-
+  </script>
 </body>
 </html>
